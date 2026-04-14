@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useReducer, useEffect } from 'react';
+import { useReducer, useEffect, useCallback, useState } from 'react';
 import { SCENARIOS } from '../data/scenarios';
 import { GC } from '../utils/constants';
 import ScenarioIntro from './ScenarioIntro';
@@ -14,8 +14,33 @@ const init = {
   timer: 0, timerActive: false, timerExpired: false,
 };
 
+const SAVE_KEY = id => `sim_progress_${id}`;
+
+function getSavedState(id) {
+  try {
+    const raw = sessionStorage.getItem(SAVE_KEY(id));
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    if (saved.nodeId === 'intro' || saved.nodeId === 'start') return null;
+    return saved;
+  } catch { return null; }
+}
+
+function persistState(id, state) {
+  try {
+    if (state.nodeId === 'intro') return;
+    const serializable = { ...state, chatLoading: false };
+    sessionStorage.setItem(SAVE_KEY(id), JSON.stringify(serializable));
+  } catch { /* quota exceeded — ignore */ }
+}
+
+function clearSavedState(id) {
+  try { sessionStorage.removeItem(SAVE_KEY(id)); } catch { /* ignore */ }
+}
+
 function reducer(state, a) {
   switch (a.type) {
+    case 'RESTORE': return { ...a.state };
     case 'GO_NODE': return { ...init, nodeId: a.nodeId, score: state.score, hist: state.hist };
     case 'START': return { ...init, nodeId: 'start' };
     case 'SELECT': return { ...state, sel: a.id };
@@ -46,19 +71,64 @@ export default function ScenarioPage() {
   const navigate = useNavigate();
   const sc = SCENARIOS.find(s => s.id === id);
   const [state, dispatch] = useReducer(reducer, init);
+  const [showResume, setShowResume] = useState(() => !!getSavedState(id));
 
   useEffect(() => { window.scrollTo({ top: 0 }); }, [id]);
   useEffect(() => { if (!sc) navigate('/', { replace: true }); }, [sc, navigate]);
 
+  useEffect(() => {
+    if (state.nodeId !== 'intro') {
+      persistState(id, state);
+    }
+  }, [id, state]);
+
+  const handleStart = useCallback(() => {
+    clearSavedState(id);
+    setShowResume(false);
+    dispatch({ type: 'START' });
+  }, [id]);
+
+  const handleResume = useCallback(() => {
+    const saved = getSavedState(id);
+    if (saved) dispatch({ type: 'RESTORE', state: saved });
+    setShowResume(false);
+  }, [id]);
+
+  const handleDismissResume = useCallback(() => {
+    clearSavedState(id);
+    setShowResume(false);
+  }, [id]);
+
   if (!sc) return null;
 
   const node = sc.nodes[state.nodeId];
+  const isEnd = node?.type === 'end';
+
+  if (isEnd) clearSavedState(id);
 
   if (state.nodeId === 'intro') {
-    return <ScenarioIntro sc={sc} onStart={() => dispatch({ type: 'START' })} />;
+    return (
+      <>
+        {showResume && (
+          <div className="resume-banner">
+            <div className="resume-banner__inner">
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>진행 중인 시뮬레이션이 있습니다</div>
+                <div style={{ fontSize: 12, color: 'var(--sec)' }}>STEP {getSavedState(id)?.hist?.length + 1 || '?'} · 점수 {getSavedState(id)?.score || 0}점</div>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn btn--primary btn--sm" onClick={handleResume}>이어하기</button>
+                <button className="btn btn--ghost" onClick={handleDismissResume}>처음부터</button>
+              </div>
+            </div>
+          </div>
+        )}
+        <ScenarioIntro sc={sc} onStart={handleStart} />
+      </>
+    );
   }
-  if (node?.type === 'end') {
-    return <PostMortem sc={sc} state={state} onRestart={() => dispatch({ type: 'START' })} />;
+  if (isEnd) {
+    return <PostMortem sc={sc} state={state} onRestart={handleStart} />;
   }
   return <ScenarioPlay sc={sc} node={node} state={state} dispatch={dispatch} />;
 }

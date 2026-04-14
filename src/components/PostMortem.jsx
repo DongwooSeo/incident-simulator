@@ -4,10 +4,86 @@ import { SCENARIOS } from '../data/scenarios';
 import { GC } from '../utils/constants';
 import { useCompleted } from './CompletedContext';
 
+function drawResultCard(canvas, { icon, title, pct, comment, sColorHex, tags, hist }) {
+  const W = 600, H = 340;
+  canvas.width = W * 2; canvas.height = H * 2;
+  canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#080b12');
+  grad.addColorStop(1, '#111827');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  const r = 16;
+  ctx.moveTo(r, 0); ctx.lineTo(W - r, 0); ctx.quadraticCurveTo(W, 0, W, r);
+  ctx.lineTo(W, H - r); ctx.quadraticCurveTo(W, H, W - r, H);
+  ctx.lineTo(r, H); ctx.quadraticCurveTo(0, H, 0, H - r);
+  ctx.lineTo(0, r); ctx.quadraticCurveTo(0, 0, r, 0);
+  ctx.fill();
+
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.font = '600 11px "JetBrains Mono", monospace';
+  ctx.fillStyle = '#3b82f6';
+  ctx.fillText('INCIDENT SIMULATOR', 32, 38);
+
+  ctx.font = '32px sans-serif';
+  ctx.fillText(icon, 32, 82);
+
+  ctx.font = '700 18px "Noto Sans KR", sans-serif';
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fillText(title.length > 28 ? title.slice(0, 28) + '...' : title, 76, 78);
+
+  ctx.font = '700 64px "JetBrains Mono", monospace';
+  ctx.fillStyle = sColorHex;
+  ctx.fillText(`${pct}%`, 32, 168);
+
+  ctx.font = '400 14px "Noto Sans KR", sans-serif';
+  ctx.fillStyle = '#8896b3';
+  ctx.fillText(comment, 32, 196);
+
+  const gradeColors = { best: '#22c55e', ok: '#eab308', bad: '#ef4444' };
+  let x = 32;
+  hist.forEach((h, i) => {
+    const c = gradeColors[h.g] || '#4a5568';
+    ctx.fillStyle = c;
+    ctx.beginPath();
+    ctx.arc(x + 8, 228, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.font = '600 10px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#080b12';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(i + 1), x + 8, 232);
+    ctx.textAlign = 'left';
+    x += 24;
+  });
+
+  ctx.font = '400 11px "JetBrains Mono", monospace';
+  ctx.fillStyle = '#4a5568';
+  x = 32;
+  const tagStr = tags.join(' · ');
+  ctx.fillText(tagStr.length > 60 ? tagStr.slice(0, 60) + '…' : tagStr, 32, 268);
+
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(32, 290, W - 64, 1);
+  ctx.font = '400 11px "JetBrains Mono", monospace';
+  ctx.fillStyle = '#4a5568';
+  ctx.fillText('#현업시뮬레이션  #백엔드  #MSA', 32, 314);
+  ctx.textAlign = 'right';
+  ctx.fillText('incident-sim.dev', W - 32, 314);
+  ctx.textAlign = 'left';
+}
+
 export default function PostMortem({ sc, state, onRestart }) {
   const navigate = useNavigate();
   const { completed, saveCompleted } = useCompleted();
   const [copied, setCopied] = useState(false);
+  const [imgSaved, setImgSaved] = useState(false);
+  const cardCanvasRef = useRef(null);
   const pm = sc.pm;
 
   const [ivOpen, setIvOpen] = useState(false);
@@ -37,6 +113,17 @@ export default function PostMortem({ sc, state, onRestart }) {
       saveCompleted({ ...completed, [sc.id]: { score: state.score, maxS, pct, cat: sc.cat, date: new Date().toLocaleDateString() } });
     }
   }, [sc.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sColorHex = pct >= 85 ? '#22c55e' : pct >= 65 ? '#3b82f6' : pct >= 45 ? '#eab308' : '#ef4444';
+
+  useEffect(() => {
+    if (cardCanvasRef.current) {
+      drawResultCard(cardCanvasRef.current, {
+        icon: sc.icon, title: sc.title, pct, comment, sColorHex,
+        tags: sc.tags, hist: state.hist,
+      });
+    }
+  }, [sc, pct, comment, sColorHex, state.hist]);
 
   useEffect(() => { ivEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [ivMsgs]);
   useEffect(() => { ccEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [ccMsgs]);
@@ -174,24 +261,41 @@ export default function PostMortem({ sc, state, onRestart }) {
         {/* ── Share ── */}
         <div className="share-card" style={{ marginBottom: 12 }}>
           <div className="tag" style={{ color: 'var(--blue)', marginBottom: 8 }}>🔗 결과 공유하기</div>
-          <div style={{ background: 'var(--bg)', borderRadius: 8, padding: 16, marginBottom: 10, border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 4 }}>INCIDENT SIMULATOR</div>
-            <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{sc.icon} {sc.title}</div>
-            <div style={{ fontFamily: 'var(--mono)', fontSize: 22, fontWeight: 700, color: sColor, marginBottom: 2 }}>{pct}%</div>
-            <div style={{ fontSize: 12, color: 'var(--sec)' }}>{comment}</div>
+          <canvas ref={cardCanvasRef} style={{ width: '100%', maxWidth: 600, borderRadius: 12, marginBottom: 10, display: 'block' }} />
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn--primary btn--sm"
+              onClick={() => {
+                const text = `[INCIDENT SIMULATOR] ${sc.icon} ${sc.title}\n점수: ${state.score}/${maxS} (${pct}%)\n${comment}\n\n의사결정 타임라인:\n${state.hist.map((h, i) => `  ${i + 1}. ${GC[h.g].emoji} ${h.t}`).join('\n')}\n\n#현업시뮬레이션 #백엔드 #MSA`;
+                navigator.clipboard?.writeText(text).then(() => {
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                });
+              }}
+            >
+              {copied ? '✓ 복사됨!' : '📋 텍스트 복사'}
+            </button>
+            <button
+              className="btn btn--secondary btn--sm"
+              onClick={() => {
+                const canvas = cardCanvasRef.current;
+                if (!canvas) return;
+                canvas.toBlob(blob => {
+                  if (!blob) return;
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `incident-sim-${sc.id}-${pct}pct.png`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  setImgSaved(true);
+                  setTimeout(() => setImgSaved(false), 2000);
+                }, 'image/png');
+              }}
+            >
+              {imgSaved ? '✓ 저장됨!' : '🖼️ 이미지 저장'}
+            </button>
           </div>
-          <button
-            className="btn btn--primary btn--sm"
-            onClick={() => {
-              const text = `[INCIDENT SIMULATOR] ${sc.icon} ${sc.title}\n점수: ${state.score}/${maxS} (${pct}%)\n${comment}\n\n#현업시뮬레이션 #백엔드 #MSA`;
-              navigator.clipboard?.writeText(text).then(() => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              });
-            }}
-          >
-            {copied ? '✓ 복사됨!' : '텍스트 복사'}
-          </button>
         </div>
 
         {/* ── Recommendations ── */}

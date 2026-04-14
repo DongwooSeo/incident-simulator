@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import { GC } from '../utils/constants';
 import { bold } from '../utils/helpers';
 
-function stepsToEnd(nodes, nodeId) {
-  let count = 0, id = nodeId;
-  while (id && nodes[id] && nodes[id].type !== 'end') {
-    count++;
-    id = nodes[id].ch?.[0]?.nx;
-  }
-  return count;
+function stepsToEnd(nodes, nodeId, visited = new Set()) {
+  if (!nodeId || !nodes[nodeId] || nodes[nodeId].type === 'end' || visited.has(nodeId)) return 0;
+  visited.add(nodeId);
+  const choices = nodes[nodeId].ch;
+  if (!choices?.length) return 1;
+  const paths = choices.map(c => stepsToEnd(nodes, c.nx, new Set(visited)));
+  return 1 + Math.min(...paths);
 }
 
 function mentorPhaseGuide(phase) {
