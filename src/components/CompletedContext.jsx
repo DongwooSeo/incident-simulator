@@ -1,16 +1,16 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 
 const Ctx = createContext();
 
-export function CompletedProvider({ children }) {
-  const [completed, setCompleted] = useState({});
+function loadCompleted() {
+  try {
+    const saved = localStorage.getItem('sim_completed');
+    return saved ? JSON.parse(saved) : {};
+  } catch { return {}; }
+}
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('sim_completed');
-      if (saved) setCompleted(JSON.parse(saved));
-    } catch { /* ignore */ }
-  }, []);
+export function CompletedProvider({ children }) {
+  const [completed, setCompleted] = useState(loadCompleted);
 
   const saveCompleted = useCallback((data) => {
     setCompleted(data);

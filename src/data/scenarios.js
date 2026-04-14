@@ -1,3 +1,50 @@
+export const GLOSSARY = {
+  "Cascading Failure": "한 서비스의 장애가 연쇄적으로 다른 서비스까지 죽이는 현상",
+  "서킷브레이커": "장애가 전파되지 않도록 실패 임계치 초과 시 호출을 차단하는 패턴 (Resilience4j, Hystrix)",
+  "MSA": "Microservice Architecture. 서비스를 독립 배포 가능한 작은 단위로 분리한 아키텍처",
+  "멱등성": "같은 요청을 여러 번 보내도 결과가 동일한 성질. 결제·주문 API의 필수 요건",
+  "데이터 정합성": "여러 시스템/DB 간 데이터가 모순 없이 일치하는 상태",
+  "동시성": "여러 요청이 같은 자원에 동시에 접근할 때 발생하는 경쟁 상태(Race Condition) 문제",
+  "Race Condition": "두 개 이상의 프로세스가 동시에 같은 데이터를 변경해 의도치 않은 결과가 나오는 현상",
+  "캐시 스탬피드": "캐시가 만료/소실되면서 대량의 요청이 동시에 DB로 몰리는 현상 (= Thundering Herd)",
+  "Redis": "인메모리 데이터 스토어. 캐시·세션·큐 등에 사용. 메모리 기반이라 휘발성에 주의",
+  "Thundering Herd": "캐시 만료 시 다수의 요청이 한꺼번에 DB로 몰리는 문제 = 캐시 스탬피드",
+  "N+1 쿼리": "목록 조회 시 1번 + 각 항목마다 N번의 추가 쿼리가 발생하는 JPA/ORM 성능 문제",
+  "JPA": "Java Persistence API. 객체-관계 매핑(ORM) 표준. Lazy Loading, Fetch Join 등이 핵심",
+  "Lazy Loading": "연관 엔티티를 실제 접근 시점에 로딩하는 JPA 전략. N+1 문제의 주범",
+  "카나리 배포": "전체 트래픽 중 일부(1~5%)만 신규 버전으로 보내 검증하는 배포 전략",
+  "Feature Flag": "코드 변경 없이 기능을 켜고 끌 수 있는 스위치. 배포와 릴리즈를 분리",
+  "배포 롤백": "문제 발생 시 이전 안정 버전으로 되돌리는 것. 롤백 시간이 곧 장애 시간",
+  "세션 관리": "사용자 로그인/장바구니 상태를 서버에서 유지하는 방법 (Redis, DB, JWT 등)",
+  "데이터 영속성": "데이터가 프로세스 종료 후에도 유지되는 것. 인메모리(Redis) vs 디스크(DB)",
+  "정산": "판매 대금을 셀러에게 정확히 분배하는 과정. 1원이라도 틀리면 법적 분쟁 가능",
+  "이벤트 소싱": "상태 변경을 이벤트 로그로 저장하고, 이벤트를 재생해 현재 상태를 복원하는 패턴",
+  "분산 트랜잭션": "여러 서비스/DB에 걸친 트랜잭션. 2PC 또는 SAGA 패턴으로 처리",
+  "SAGA 패턴": "분산 트랜잭션을 로컬 트랜잭션 체인 + 보상 트랜잭션으로 처리하는 패턴",
+  "헬스체크": "서비스가 정상인지 주기적으로 확인하는 엔드포인트 (/health, /actuator/health)",
+  "모니터링": "시스템의 메트릭·로그·트레이스를 수집하고 시각화하여 이상을 탐지하는 체계",
+  "SRE": "Site Reliability Engineering. Google이 제안한 운영 방법론. SLO/SLI/에러버짓 기반",
+  "SLO": "Service Level Objective. '응답시간 p99 < 200ms' 같은 서비스 목표치",
+  "Fallback": "주 기능 실패 시 대체 동작을 수행하는 패턴. 서킷브레이커와 함께 사용",
+  "Runbook": "장애 유형별 대응 절차를 문서화한 것. 새벽에도 누구나 대응할 수 있게 함",
+  "p99": "전체 요청 중 99번째 백분위 응답시간. 상위 1% 최악 케이스 성능 지표. SLO에 자주 사용",
+  "PG": "Payment Gateway. 카드사/은행과 가맹점 사이에서 결제를 중계하는 서비스 (토스페이먼츠, KG이니시스 등)",
+  "AOF": "Append Only File. Redis의 영속성 방식 중 하나로, 모든 쓰기 명령을 로그로 기록하여 복구에 사용",
+  "RDB 스냅샷": "Redis의 영속성 방식. 특정 시점의 메모리 데이터를 디스크에 덤프. 복구 빠르지만 마지막 스냅샷 이후 데이터 유실 가능",
+  "DLQ": "Dead Letter Queue. 처리 실패한 메시지를 별도 큐에 보관하여 나중에 재처리하거나 수동 확인하는 패턴",
+  "HPA": "Horizontal Pod Autoscaler. Kubernetes에서 CPU/메모리 등 메트릭 기반으로 Pod 수를 자동 조절",
+  "이중 원장": "Double-Entry Ledger. 모든 거래를 차변/대변 쌍으로 기록하는 복식부기. 합계 불일치 시 즉시 감지 가능",
+  "2PC": "Two-Phase Commit. 분산 트랜잭션에서 코디네이터가 prepare → commit 2단계로 전체 커밋을 관리. 성능 병목으로 MSA에서 거의 미사용",
+  "Orchestration": "SAGA 구현 방식. 중앙 Orchestrator가 전체 트랜잭션 흐름을 관리. 디버깅 용이, 핵심 플로우에 적합",
+  "Choreography": "SAGA 구현 방식. 각 서비스가 이벤트를 발행/구독하며 자율적으로 동작. 느슨한 결합, 단순한 플로우에 적합",
+  "에러 버짓": "Error Budget. SLO 대비 허용 가능한 장애 시간/에러율. 에러 버짓 소진 시 신규 배포를 중단하고 안정화에 집중",
+  "카오스 엔지니어링": "Chaos Engineering. 프로덕션 환경에서 의도적으로 장애를 주입하여 시스템 복원력을 검증하는 방법론 (Netflix Chaos Monkey)",
+  "낙관적 락": "Optimistic Lock. 충돌이 드물다고 가정하고, 커밋 시점에 버전을 비교하여 충돌을 감지. JPA @Version 활용",
+  "Write-Behind": "Write-Back이라고도 함. 캐시에 먼저 쓰고, 일정 주기로 DB에 비동기 반영하는 패턴. 쓰기 성능 높지만 유실 위험",
+  "Consumer Lag": "Kafka에서 프로듀서가 보낸 메시지 대비 컨슈머가 아직 처리하지 못한 메시지의 차이. 랙이 커지면 처리 지연 발생",
+  "시크릿 관리": "API 키, DB 비밀번호 등 민감 정보를 코드/저장소에 노출하지 않고 안전하게 관리하는 체계 (Vault, AWS Secrets Manager 등)",
+};
+
 export const SCENARIOS = [
   {
     id: "sc1", role: "주니어 백엔드 개발자", brief: "금요일 저녁 피크타임에 주문 서비스가 죽기 시작했습니다. 3만 명의 고객이 주문을 못 하고 있습니다.", why: "MSA 장애 대응은 이커머스 면접의 1번 질문입니다. '서킷브레이커가 뭔가요?'에 실전 경험 없이 답하면 바로 탈락합니다.", title: "금요일 피크타임, 주문이 사라지고 있다",
@@ -95,15 +142,19 @@ export const SCENARIOS = [
         ch: [
           { id: "A", text: "서킷 브레이커(Resilience4j) + Fallback 적용", desc: "외부 호출 실패 시 fallback으로 주문은 성공, 나머지는 보상 처리", g: "best", nx: "step2_bad_aftermath",
             impact: { "주문 성공률": "89%", "추가 손실": "7분간 전체 중단분", "복구 시간": "15분" } },
-          { id: "B", text: "인스턴스를 10개로 늘려 재시작", desc: "더 많은 인스턴스로 분산", g: "bad", nx: "step2_bad_aftermath",
+          { id: "B", text: "delivery-service 호출만 주석 처리 후 긴급 배포", desc: "배송 호출 제거 → 주문만이라도 살림", g: "ok", nx: "step2_bad_aftermath",
+            impact: { "주문 성공률": "85%", "추가 손실": "배송 추적 불가", "복구 시간": "10분" } },
+          { id: "C", text: "인스턴스를 10개로 늘려 재시작", desc: "더 많은 인스턴스로 분산", g: "bad", nx: "step2_bad_aftermath",
             impact: { "주문 성공률": "0% (변화없음)", "추가 손실": "계속 증가", "복구 시간": "불확실" } }
         ],
         fb: {
           A: { t: "🟢 늦었지만 올바른 판단", b: "7분의 시간을 잃었지만, 이제라도 **정확한 조치**를 취한 것이 중요합니다. 현업에서 'panic-driven debugging'은 장애 대응의 최악 패턴입니다.", cost: "서킷+fallback 이후에도 **미처리 배송·알림**은 보상 트랜잭션으로 따로 정리해야 합니다.", r: "" },
-          B: { t: "🔴 같은 실수 반복", b: "10개 인스턴스 모두 **같은 문제로 블로킹**됩니다. 구조적 문제 앞에서 수평 확장은 무력합니다.", cost: "인스턴스 비용만 늘고 **장애 시간은 연장**될 수 있습니다.", r: "" }
+          B: { t: "🟡 빠르지만 추적 어려움", b: "주석 처리로 빠르게 복구할 수 있지만, **어떤 주문에 배송이 빠졌는지 추적이 어렵습니다.** 서킷 브레이커는 fallback에서 실패 기록을 남기므로 보상 처리가 쉽습니다.", cost: "데이터 팀이 **주문-배송 불일치 리포트**를 수작업으로 맞춰야 합니다.", r: "" },
+          C: { t: "🔴 같은 실수 반복", b: "10개 인스턴스 모두 **같은 문제로 블로킹**됩니다. 구조적 문제 앞에서 수평 확장은 무력합니다.", cost: "인스턴스 비용만 늘고 **장애 시간은 연장**될 수 있습니다.", r: "" }
         },
         tradeoff: [
           { option: "서킷 브레이커", time: "15분", risk: "낮음", dataLoss: "보상 필요", note: "7분 지연 후 최선" },
+          { option: "주석 처리 핫픽스", time: "10분", risk: "중간", dataLoss: "추적 어려움", note: "빠르지만 위험" },
           { option: "스케일아웃", time: "불확실", risk: "높음", dataLoss: "계속 증가", note: "근본 해결 안됨" }
         ]
       },
@@ -632,17 +683,21 @@ export const SCENARIOS = [
           { id: "B", text: "Redis 분산 락(Redisson)", desc: "SETNX로 락 획득 후 차감", g: "ok", nx: "end",
             impact: { "초과판매": "방지", "성능": "락 대기 발생", "복잡도": "높음" } },
           { id: "C", text: "비관적 락 (SELECT FOR UPDATE)", desc: "DB 행 레벨 락으로 동시 접근 차단", g: "ok", nx: "end",
-            impact: { "초과판매": "방지", "성능": "락 경합 심함", "복잡도": "중간" } }
+            impact: { "초과판매": "방지", "성능": "락 경합 심함", "복잡도": "중간" } },
+          { id: "D", text: "낙관적 락 (JPA @Version)", desc: "버전 컬럼 비교, 충돌 시 예외 발생 후 재시도", g: "ok", nx: "end",
+            impact: { "초과판매": "방지", "성능": "충돌 적으면 좋음", "복잡도": "중간" } }
         ],
         fb: {
           A: { t: "🟢 가장 단순하고 효과적!", b: "DB 엔진이 원자성을 보장합니다. 별도 락 없이 초과 판매를 완벽 방지. **단순한 해결책이 최고의 해결책**.", cost: "인덱스·격리 수준에 따라 **유령 재고** 드물게 발생할 수 있어 모니터링이 필요합니다.", r: "많은 이커머스가 이 방식을 기본으로 사용합니다." },
           B: { t: "🟡 복잡", b: "분산 락은 **락 대기, 타임아웃, 데드락** 등 관리 포인트가 많습니다. DB 원자 연산이 가능하면 불필요한 복잡성.", cost: "Redis 장애 시 **fail-open 여부**가 정책으로 정해져야 합니다.", r: "" },
-          C: { t: "🟡 성능 이슈", b: "초당 5,000 요청에서 **락 경합이 심해** 성능이 크게 저하됩니다.", cost: "인기 상품 한 줄에 몰리면 **핫스팟**이 됩니다.", r: "" }
+          C: { t: "🟡 성능 이슈", b: "초당 5,000 요청에서 **락 경합이 심해** 성능이 크게 저하됩니다.", cost: "인기 상품 한 줄에 몰리면 **핫스팟**이 됩니다.", r: "" },
+          D: { t: "🟡 충돌 시 재시도 필요", b: "낙관적 락(JPA @Version)은 충돌이 드문 경우에 효과적입니다. UPDATE 시 version 불일치면 OptimisticLockException 발생 → 재시도.", cost: "한정판 드롭처럼 **동시 요청이 극단적으로 많은 경우** 충돌률이 높아져 재시도 폭증 → 오히려 성능 저하.", r: "일반 재고 관리(동시성 낮음)에서는 좋은 선택이지만, 초당 5,000 요청 한정판에는 원자적 UPDATE가 더 적합합니다." }
         },
         tradeoff: [
           { option: "원자적 UPDATE", time: "즉시", risk: "없음", dataLoss: "없음", note: "가장 단순하고 효과적" },
           { option: "Redis 분산 락", time: "락 대기", risk: "데드락 가능", dataLoss: "없음", note: "극한 트래픽에 적합" },
-          { option: "SELECT FOR UPDATE", time: "락 대기", risk: "경합 심함", dataLoss: "없음", note: "단일 DB에서 유효" }
+          { option: "SELECT FOR UPDATE", time: "락 대기", risk: "경합 심함", dataLoss: "없음", note: "단일 DB에서 유효" },
+          { option: "낙관적 락 @Version", time: "즉시 (충돌 시 재시도)", risk: "재시도 폭증", dataLoss: "없음", note: "충돌 적을 때 유효" }
         ]
       },
       end: { type: "end" }
@@ -826,7 +881,7 @@ export const SCENARIOS = [
             ]}
           ]
         },
-        freeFirst: "이번 OOM의 근본 원인은 **eviction policy**였습니다. maxmemory-policy를 어떻게 설정하고, 핫키 스탬피드를 구조적으로 방지할 전략을 적어보세요.",
+        freeFirst: "CTO가 경영진에게 이번 사고의 **비즈니스 임팩트와 재발 방지 대책**을 1분 안에 설명해달라고 합니다. 기술 용어를 최소화하고, '매출·고객 영향 → 원인 → 대책' 순서로 브리핑 스크립트를 작성해보세요.",
         slack: { name: "CTO 박서연", time: "10:25", body: "복구 수고했습니다. 하지만 **Redis 죽으면 서비스 전체가 죽는 구조**가 문제예요. 이번 주 포스트모템에 **maxmemory 정책, 모니터링 알림, 워밍업 자동화** 세 가지 대책을 올려주세요." },
         q: "Redis 운영 안정화를 위해 어떤 대책을 도입하시겠습니까?",
         ch: [
@@ -1028,7 +1083,7 @@ export const SCENARIOS = [
             ]}
           ]
         },
-        freeFirst: "쿼리 수는 줄었지만, 프로덕션 배포 후 **사이드 이펙트가 없는지** 어떻게 확인하시겠어요? 모니터링해야 할 지표를 적어보세요.",
+        freeFirst: "PM이 '기획전 시작 전에 성능 개선 결과를 Slack으로 공유해달라'고 합니다. **비개발자도 이해할 수 있는 언어**로, [문제 → 원인 → 조치 → 결과(숫자)] 형태의 메시지를 작성해보세요.",
         slack: { name: "PM 이주현", time: "15:25", body: "스테이징 180ms 확인했습니다! **배포 부탁드려요.** 단, 기획전 트래픽이 평소 3배니까 **배포 후 30분간 모니터링** 같이 봐주실 수 있나요? GA에서 PLP 전환율 실시간으로 올려놓을게요." },
         q: "프로덕션 배포 후 어떻게 검증하시겠습니까?",
         ch: [
@@ -1398,6 +1453,11 @@ export const SCENARIOS = [
               { t: "", lv: "info", m: "AOF appendfsync=everysec — 최대 1초 데이터 유실" },
               { t: "", lv: "warn", m: "AOF 파일 크기 관리 필요 — rewrite 주기 설정" },
               { t: "", lv: "error", m: "단독 Redis 의존은 여전히 SPOF" }
+            ]},
+            { id: "writebehind", label: "📋 Write-Behind 패턴", content: [
+              { t: "", lv: "info", m: "Write-Behind(Write-Back): 캐시에 먼저 쓰고, 비동기로 DB에 반영" },
+              { t: "", lv: "warn", m: "쓰기 성능은 좋지만, 캐시 장애 시 아직 DB에 반영 안 된 데이터 유실 위험" },
+              { t: "", lv: "error", m: "장바구니처럼 유실되면 안 되는 데이터에는 Write-Through가 더 안전" }
             ]},
             { id: "compare", label: "📊 방식 비교", metrics: [
               { l: "DB+캐시", v: "안전", s: "ok", u: "장애 시 DB fallback" },
@@ -2101,6 +2161,358 @@ export const SCENARIOS = [
         prompt: "주문 서비스의 에러율이 5%를 넘거나 p99 응답시간이 3초를 넘으면 Slack으로 알림이 가도록 Prometheus AlertManager 규칙을 작성하세요.",
         starterCode: "# prometheus-alerts.yml\ngroups:\n- name: order-service-alerts\n  rules:\n  - alert: HighErrorRate\n    # TODO: 에러율 > 5% 조건\n    expr: |\n      # http_server_requests_seconds_count 메트릭 활용\n    for: 1m\n    labels:\n      severity: critical\n    annotations:\n      summary: \"주문 서비스 에러율 {{ $value }}%\"\n\n  - alert: HighLatency\n    # TODO: p99 응답시간 > 3초 조건\n    expr: |\n      # http_server_requests_seconds 히스토그램 메트릭 활용\n    for: 2m\n    labels:\n      severity: warning\n    annotations:\n      summary: \"주문 서비스 p99 {{ $value }}초\"",
         hint: "rate()와 histogram_quantile() 함수를 활용하세요. status=~'5..'로 에러 응답만 필터링합니다."
+      }
+    }
+  },
+  {
+    id: "sc11", role: "백엔드 개발자", brief: "GitHub 리포에 .env 파일이 올라갔습니다. DB 비밀번호와 PG API 키가 노출됐고, 이미 의심스러운 접근이 감지됐습니다.", why: "시크릿 노출은 이커머스에서 가장 치명적인 보안 사고입니다. 개인정보 유출로 이어지면 과징금·소송·브랜드 추락이 동시에 옵니다. 대응 속도가 피해 규모를 결정합니다.", title: "GitHub에 DB 비밀번호가 올라갔다",
+    company: "셀렉트샵 — 회원 80만 개인정보 보유 커머스",
+    tags: ["보안 사고", "시크릿 관리", "인시던트 대응"], diff: "중급", dur: "10분", cat: "보안 사고", icon: "🔐", clr: "#dc2626",
+    nodes: {
+      start: {
+        time: "09:15", title: "시크릿 노출 감지", phase: "investigate",
+        nar: ["화요일 아침. GitHub 보안 알림: **public repository에 .env 파일이 감지**됐습니다.", "파일에는 **프로덕션 DB 비밀번호, PG API 시크릿 키, JWT 서명 키**가 포함되어 있습니다. 커밋은 **3일 전**에 올라갔고, 이미 **봇에 의한 스캔**이 시작된 흔적이 있습니다."],
+        alerts: [
+          { level: "critical", msg: "GitHub Secret Scanning: .env contains database credentials" },
+          { level: "critical", msg: "AWS GuardDuty: Unusual API call from unknown IP (54.xx.xx.xx)" },
+          { level: "warning", msg: "DB audit log: SELECT on p_users table from non-app IP" }
+        ],
+        clues: {
+          prompt: "어떤 정보를 먼저 확인하시겠습니까?",
+          options: [
+            { id: "env", label: "📋 노출된 .env 파일", content: [
+              { t: "", lv: "error", m: "DB_HOST=prod-db.internal:5432" },
+              { t: "", lv: "error", m: "DB_PASSWORD=S3cur3P@ss!2024" },
+              { t: "", lv: "error", m: "PG_SECRET_KEY=sk_live_Tq3x..." },
+              { t: "", lv: "error", m: "JWT_SECRET=my-jwt-secret-key-do-not-share" }
+            ]},
+            { id: "access", label: "📊 접근 로그 분석", metrics: [
+              { l: "비인가 DB 접근", v: "14건", s: "danger", u: "최근 72시간" },
+              { l: "접근 IP", v: "3개국", s: "danger", u: "한국 외 미국·중국" },
+              { l: "조회된 테이블", v: "p_users, p_payments", s: "danger", u: "개인정보+결제" }
+            ]},
+            { id: "git", label: "🔍 Git 이력", content: [
+              { t: "3일 전", lv: "error", m: "commit abc1234: 'fix: env config' — .env 파일 포함" },
+              { t: "3일 전", lv: "warn", m: ".gitignore에 .env 미등록 상태" },
+              { t: "현재", lv: "info", m: "커밋 삭제해도 git history에 남아있음 — force push 또는 BFG 필요" }
+            ]}
+          ]
+        },
+        timer: 30,
+        freeFirst: "DB 비밀번호와 API 키가 3일간 GitHub에 노출되었습니다. 지금 가장 먼저 해야 할 행동은 무엇인가요? 선택지를 보기 전에 우선순위를 적어보세요.",
+        q: "시크릿 노출을 발견한 직후, 가장 먼저 해야 할 행동은?",
+        hint: "이미 3일간 노출되었습니다. 커밋을 삭제하는 것만으로 충분할까요?",
+        ch: [
+          { id: "A", text: "즉시 모든 노출 키 로테이션 + 접근 로그 분석", desc: "DB 비밀번호, PG 키, JWT 시크릿 전부 즉시 변경 + 비인가 접근 추적", g: "best", nx: "s11assess",
+            impact: { "추가 피해": "즉시 차단", "서비스": "일시 재시작", "시간": "30분" } },
+          { id: "B", text: "해당 커밋 삭제 후 git force push", desc: "노출 파일을 git history에서 제거", g: "bad", nx: "s11_bad",
+            impact: { "추가 피해": "계속 가능 (키 변경 안 함)", "서비스": "변화 없음", "시간": "10분" } },
+          { id: "C", text: "리포를 private으로 전환", desc: "더 이상의 외부 접근 차단", g: "ok", nx: "s11assess",
+            impact: { "추가 피해": "신규 유출만 차단", "서비스": "변화 없음", "시간": "1분" } }
+        ],
+        fb: {
+          A: { t: "🟢 최우선 대응!", b: "**노출된 키는 이미 복사되었을 수 있습니다.** 커밋 삭제는 부수 조치일 뿐, **키 로테이션이 1순위**입니다. 3일간 노출 = 이미 수집됐다고 가정해야 합니다.", cost: "키 변경 시 모든 서비스 재시작이 필요하고 **배포 파이프라인·환경변수 업데이트**가 동시에 이뤄져야 합니다.", r: "GitHub는 시크릿 감지 시 자동으로 관련 서비스에 알리며, AWS·Stripe 등은 노출된 키를 자동 비활성화합니다." },
+          B: { t: "🔴 이미 늦었습니다", b: "3일간 public이었으므로 **봇이 이미 키를 수집**했습니다. git history에서 삭제해도 **이미 복사된 키로 접근 가능**합니다.", cost: "키 로테이션 없이 커밋만 삭제하면 **비인가 접근이 계속**됩니다.", r: "GitHub 공식 문서에서도 '노출된 시크릿은 반드시 교체하라'고 명시합니다." },
+          C: { t: "🟡 부분적 조치", b: "private 전환은 **추가 노출을 막지만**, 이미 수집된 키로는 여전히 접근 가능합니다. **키 로테이션이 반드시 병행**되어야 합니다.", cost: "private 전환만으로 안심하면 **이미 유출된 키로 DB 접근이 계속**될 수 있습니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "키 로테이션", time: "30분", risk: "매우 낮음", dataLoss: "없음", note: "필수 1순위" },
+          { option: "커밋 삭제", time: "10분", risk: "높음", dataLoss: "없음", note: "키 여전히 유효" },
+          { option: "private 전환", time: "1분", risk: "중간", dataLoss: "없음", note: "보조 조치" }
+        ]
+      },
+      s11_bad: {
+        time: "09:30", title: "커밋만 삭제 — 접근 계속", phase: "action",
+        nar: ["git history에서 .env를 제거하고 force push했지만, **비인가 접근은 멈추지 않았습니다.**", "DB 감사 로그를 보니 **커밋 삭제 이후에도 동일 IP에서 p_users 테이블 조회**가 계속되고 있습니다. 키가 이미 복사되어 사용되고 있는 것입니다."],
+        clues: {
+          prompt: "왜 커밋 삭제가 효과 없는지 확인합니다.",
+          options: [
+            { id: "audit", label: "📋 DB 감사 로그", content: [
+              { t: "09:25", lv: "error", m: "SELECT email, phone, address FROM p_users LIMIT 10000 — IP: 54.xx.xx.xx" },
+              { t: "09:28", lv: "error", m: "SELECT card_last4, pg_token FROM p_payments — IP: 54.xx.xx.xx" }
+            ]},
+            { id: "timeline", label: "⏱ 노출 타임라인", metrics: [
+              { l: "노출 기간", v: "72시간", s: "danger", u: "충분한 수집 시간" },
+              { l: "비인가 접근", v: "계속 중", s: "danger", u: "커밋 삭제 무효" },
+              { l: "키 상태", v: "여전히 유효", s: "danger", u: "로테이션 안 함" }
+            ]},
+            { id: "reason", label: "💡 근본 원인", content: [
+              { t: "", lv: "error", m: "공개 리포에 올라간 순간 봇이 키를 수집 — 삭제해도 이미 복사됨" },
+              { t: "", lv: "warn", m: "GitHub cache, Google cache, Wayback Machine에도 남아있을 수 있음" }
+            ]}
+          ]
+        },
+        freeFirst: "커밋을 삭제했는데 왜 접근이 계속될까요? **'삭제'와 '무효화'의 차이**를 한두 문장으로 적어보세요.",
+        slack: { name: "보안팀 김리드", time: "09:28", body: "감사 로그에 **여전히 외부 IP에서 SELECT** 찍히고 있어요. force push로 git에서 지워도 **키 자체를 안 바꾸면 소용없습니다.** 지금 당장 **키 로테이션** 해주세요." },
+        met: [
+          { l: "비인가 접근", v: "계속 중", s: "danger", u: "키 미변경" },
+          { l: "추가 노출 데이터", v: "p_users 10,000건", s: "danger", u: "15분 사이 추가 조회" }
+        ],
+        timer: 20,
+        q: "커밋 삭제가 무의미했습니다. 지금 해야 할 일은?",
+        ch: [
+          { id: "A", text: "즉시 모든 노출 키 로테이션 + 비인가 IP 차단", desc: "DB 비밀번호, PG 키, JWT 시크릿 즉시 변경 + IP 블로킹", g: "best", nx: "s11assess",
+            impact: { "접근 차단": "즉시", "추가 피해": "중단", "시간": "30분" } },
+          { id: "B", text: "DB 방화벽에서 비인가 IP만 차단", desc: "해당 IP만 블로킹", g: "ok", nx: "s11assess",
+            impact: { "접근 차단": "해당 IP만", "추가 피해": "다른 IP 가능", "시간": "5분" } }
+        ],
+        fb: {
+          A: { t: "🟢 늦었지만 올바른 판단", b: "15분을 허비했지만, **키 로테이션 + IP 차단**을 동시에 해야 합니다. 키가 변경되면 기존 키로는 접근 불가.", cost: "이미 유출된 **10,000건+α 고객 데이터**는 별도 대응(신고·통지)이 필요합니다.", r: "" },
+          B: { t: "🟡 불완전", b: "해당 IP만 막아도 **키를 공유하거나 VPN을 쓰면** 다른 IP로 접근 가능합니다. **키 자체를 무효화**해야 합니다.", cost: "IP 차단은 **보조 수단**이지 근본 해결이 아닙니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "키 로테이션 + IP 차단", time: "30분", risk: "없음", dataLoss: "없음", note: "근본 해결" },
+          { option: "IP 차단만", time: "5분", risk: "높음", dataLoss: "없음", note: "우회 가능" }
+        ]
+      },
+      s11assess: {
+        time: "10:00", title: "피해 범위 파악 + 법적 대응", phase: "action",
+        nar: ["키 로테이션 완료. 비인가 접근은 차단됐습니다.", "하지만 **72시간 동안의 감사 로그를 분석**한 결과, **p_users 테이블에서 약 23,000건의 개인정보(이름, 이메일, 전화번호, 주소)**가 조회된 것으로 확인됩니다.", "개인정보보호법에 따라 **1,000명 이상 유출 시 24시간 이내 개인정보보호위원회 신고** 의무가 있습니다."],
+        clues: {
+          prompt: "법적 의무와 기술적 후속 조치를 확인합니다.",
+          options: [
+            { id: "legal", label: "📋 법적 의무", content: [
+              { t: "", lv: "error", m: "개인정보보호법 제34조: 유출 사실을 안 날부터 72시간 이내 정보주체에게 통지" },
+              { t: "", lv: "error", m: "1,000명 이상 유출 시 개인정보보호위원회 + 한국인터넷진흥원(KISA)에 24시간 이내 신고" },
+              { t: "", lv: "warn", m: "위반 시 과징금 최대 매출액의 3%, 형사처벌 가능" }
+            ]},
+            { id: "scope", label: "📊 유출 범위", metrics: [
+              { l: "유출 건수", v: "~23,000건", s: "danger", u: "이름, 이메일, 전화번호, 주소" },
+              { l: "결제 정보", v: "카드 뒤 4자리", s: "warning", u: "full PAN 아님" },
+              { l: "비밀번호", v: "bcrypt 해시", s: "ok", u: "평문 아님" }
+            ]},
+            { id: "tech", label: "🛠 기술 후속 조치", content: [
+              { t: "", lv: "info", m: "Vault/AWS Secrets Manager 도입 — 코드에서 시크릿 완전 분리" },
+              { t: "", lv: "info", m: "pre-commit hook: detect-secrets, git-secrets — 커밋 전 시크릿 감지" },
+              { t: "", lv: "warn", m: ".gitignore 강화 + GitHub Secret Scanning 활성화" }
+            ]}
+          ]
+        },
+        freeFirst: "개인정보 23,000건이 유출되었습니다. 개발자로서 기술 대응 외에, **법무팀·경영진·고객에게 전달해야 할 내용**을 각각 한두 문장으로 작성해보세요.",
+        slack: { name: "법무팀 박변호사", time: "09:55", body: "23,000건이면 **개인정보보호위원회 신고 의무** 대상입니다. 유출 경위, 유출 항목, 피해 최소화 조치를 정리해서 **오늘 오후까지** 보내주세요. 고객 통지문도 준비해야 합니다." },
+        met: [
+          { l: "유출 건수", v: "~23,000건", s: "danger", u: "개인정보" },
+          { l: "법적 신고", v: "24시간 이내", s: "danger", u: "의무" },
+          { l: "키 로테이션", v: "완료", s: "ok", u: "추가 접근 차단" }
+        ],
+        timer: 30,
+        q: "유출 확인 후 어떻게 대응하시겠습니까?",
+        ch: [
+          { id: "A", text: "법적 신고 + 고객 통지 + Vault 도입 + pre-commit hook", desc: "법적 의무 이행, 기술적 재발 방지 모두 실행", g: "best", nx: "end",
+            impact: { "법적 리스크": "최소화", "재발 방지": "구조적 해결", "신뢰": "투명한 대응" } },
+          { id: "B", text: "키 로테이션했으니 .gitignore만 추가", desc: "기술 조치만 하고 법적 절차는 생략", g: "bad", nx: "end",
+            impact: { "법적 리스크": "과징금·형사처벌", "재발 방지": "부분적", "신뢰": "은폐 리스크" } },
+          { id: "C", text: "법적 신고 + 고객 통지만 수행", desc: "법적 의무는 이행하되 기술 개선은 나중에", g: "ok", nx: "end",
+            impact: { "법적 리스크": "최소화", "재발 방지": "미흡", "신뢰": "가능" } }
+        ],
+        fb: {
+          A: { t: "🟢 완전한 대응!", b: "**법적 의무 이행 + 기술적 재발 방지** 모두 갖춰야 합니다. Vault로 시크릿을 코드에서 완전 분리하고, pre-commit hook으로 실수 자체를 방지합니다.", cost: "Vault 도입에 **1~2주**, pre-commit hook 설정에 **반나절** 정도 걸립니다.", r: "토스, 카카오 등은 HashiCorp Vault 또는 AWS Secrets Manager를 필수로 사용합니다." },
+          B: { t: "🔴 법적 처벌 위험", b: "23,000건 유출을 신고하지 않으면 **개인정보보호법 위반**으로 과징금, 형사처벌 가능합니다. .gitignore만으로는 재발 방지도 불충분.", cost: "은폐 적발 시 **과징금이 10배 이상** 가중될 수 있습니다.", r: "" },
+          C: { t: "🟡 법적으로는 OK, 기술적으로는 미흡", b: "법적 의무는 이행했지만, **같은 실수가 반복**될 수 있습니다. Vault 없이는 다음 신규 개발자가 또 .env를 커밋할 수 있습니다.", cost: "재발 시 **'왜 안 막았나'**는 질문에 답할 수 없습니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "법적 신고+기술 대책", time: "1~2주", risk: "매우 낮음", dataLoss: "없음", note: "완전한 대응" },
+          { option: ".gitignore만", time: "10분", risk: "법적 처벌", dataLoss: "없음", note: "은폐 리스크" },
+          { option: "법적 신고만", time: "1일", risk: "재발 가능", dataLoss: "없음", note: "기술 개선 미흡" }
+        ]
+      },
+      end: { type: "end" }
+    },
+    pm: {
+      rc: ".gitignore 미설정으로 .env 파일이 public repository에 커밋. DB 비밀번호·API 키 노출 후 비인가 접근으로 개인정보 유출.",
+      qa: [
+        { q: "시크릿 노출 시 1순위 행동?", a: "커밋 삭제가 아니라 키 로테이션이 1순위. 노출된 키는 이미 복사되었다고 가정." },
+        { q: "시크릿 관리 모범 사례?", a: "Vault/Secrets Manager로 코드에서 분리, pre-commit hook으로 커밋 전 감지, .gitignore 필수." },
+        { q: "개인정보 유출 시 법적 의무?", a: "1,000명 이상 유출 시 24시간 내 개인정보보호위원회·KISA 신고, 72시간 내 정보주체 통지." }
+      ],
+      checklist: [
+        "프로젝트의 `.gitignore`에 `.env`, `*.pem`, `credentials.json` 등이 포함되어 있는지 확인하세요.",
+        "`git log --all --full-history -- '*.env'` 명령으로 과거에 .env가 커밋된 적 있는지 확인하세요.",
+        "detect-secrets 또는 git-secrets를 pre-commit hook에 설정하고, 테스트로 가짜 시크릿을 커밋해보세요.",
+        "프로덕션 시크릿이 코드나 환경변수 파일이 아닌 **Vault 또는 Secrets Manager**에 저장되어 있는지 확인하세요."
+      ],
+      pl: "프로젝트에 pre-commit hook(detect-secrets) + Vault를 도입하면 보안 설계 역량 어필.",
+      nextRec: [{id:"sc6",reason:"배포 안전장치(카나리/Feature Flag)도 보안과 함께 중요합니다"},{id:"sc10",reason:"보안 사고를 빠르게 감지하려면 모니터링이 필수입니다"}],
+      interviewQs: [
+        "프로덕션 시크릿(DB 비밀번호, API 키)을 안전하게 관리하는 방법을 설명해주세요.",
+        "GitHub에 시크릿이 노출된 것을 발견했을 때, 어떤 순서로 대응하시겠습니까?",
+        "개인정보 유출 사고 발생 시 개발자로서 해야 할 기술적·법적 조치는 무엇인가요?"
+      ],
+      codeChallenge: {
+        title: "pre-commit hook으로 시크릿 감지 설정",
+        prompt: "커밋 전에 코드에 시크릿(API 키, 비밀번호 등)이 포함되어 있는지 자동 감지하는 pre-commit hook 설정을 작성하세요. detect-secrets를 활용합니다.",
+        starterCode: "# .pre-commit-config.yaml\nrepos:\n  - repo: https://github.com/Yelp/detect-secrets\n    rev: v1.4.0\n    hooks:\n      - id: detect-secrets\n        # TODO: 설정 완성\n        # 1. baseline 파일 경로 지정\n        # 2. 제외할 파일 패턴 추가\n        # 3. 커스텀 플러그인으로 한국 전화번호 패턴 감지\n\n# .secrets.baseline\n# TODO: detect-secrets scan 결과를 baseline으로 저장\n# detect-secrets scan > .secrets.baseline\n\n# 추가 과제:\n# 1. GitHub Actions에서 PR마다 시크릿 스캔 실행\n# 2. Vault에서 시크릿을 주입하는 Spring Boot 설정 작성",
+        hint: "detect-secrets scan으로 baseline을 생성하고, pre-commit hook이 새로운 시크릿만 감지하도록 설정하세요."
+      }
+    }
+  },
+  {
+    id: "sc12", role: "백엔드 개발자", brief: "주문은 정상인데 배송이 안 나갑니다. Kafka 컨슈머 랙이 50만 건을 넘었고, 새벽배송 마감까지 3시간 남았습니다.", why: "Kafka는 MSA의 핵심 인프라입니다. 컨슈머 랙을 모르면 '주문은 되는데 배송이 안 간다'는 장애를 진단조차 못 합니다. 이벤트 기반 아키텍처의 필수 지식입니다.", title: "주문은 되는데 배송이 안 나간다",
+    company: "프레시마켓 — 새벽배송 일 5만 건 식품 커머스",
+    tags: ["Kafka", "Consumer Lag", "메시지 큐"], diff: "중급", dur: "10분", cat: "인프라 장애", icon: "📨", clr: "#0891b2",
+    nodes: {
+      start: {
+        time: "21:00", title: "배송 서비스 무반응", phase: "investigate",
+        nar: ["밤 9시. 새벽배송 마감까지 **3시간**. 물류팀에서 긴급 연락: '주문은 들어오는데 **배송 준비 목록에 아무것도 안 내려와요.**'", "주문 서비스는 정상, 결제도 정상. 하지만 **배송 서비스가 새로운 주문을 못 받고 있습니다.**"],
+        alerts: [
+          { level: "critical", msg: "Kafka consumer group 'delivery-consumer': lag 521,000 messages" },
+          { level: "critical", msg: "delivery-service: 0 messages consumed in last 30 minutes" },
+          { level: "warning", msg: "물류팀: '새벽배송 피킹 시작 못 하고 있습니다'" }
+        ],
+        clues: {
+          prompt: "배송이 처리되지 않는 원인을 찾기 위해 어떤 정보를 확인하시겠습니까?",
+          options: [
+            { id: "kafka", label: "📊 Kafka 메트릭", metrics: [
+              { l: "Consumer Lag", v: "521,000", s: "danger", u: "30분간 0 소비" },
+              { l: "파티션 수", v: "3개", s: "warning", u: "컨슈머 3개 중 1개만 active" },
+              { l: "프로듀서", v: "정상", s: "ok", u: "주문 이벤트 발행 중" }
+            ]},
+            { id: "consumer", label: "📋 컨슈머 로그", content: [
+              { t: "20:28", lv: "error", m: "delivery-consumer-2: CommitFailedException — session.timeout exceeded" },
+              { t: "20:29", lv: "warn", m: "Consumer group rebalancing triggered — partition reassignment in progress" },
+              { t: "20:30", lv: "error", m: "Rebalance failed: max.poll.interval.ms exceeded (300000ms)" },
+              { t: "20:31", lv: "error", m: "All consumers stuck in rebalancing loop — 0 active consumers" }
+            ]},
+            { id: "app", label: "📋 배송 서비스 로그", content: [
+              { t: "20:25", lv: "warn", m: "processDelivery(): External API call to logistics-partner timeout 60s" },
+              { t: "20:26", lv: "error", m: "Single message processing took 180s — exceeds max.poll.interval.ms" },
+              { t: "", lv: "info", m: "원인: 외부 물류 API 응답 지연으로 poll() 간격 초과 → 리밸런싱 루프" }
+            ]}
+          ]
+        },
+        timer: 40,
+        freeFirst: "Kafka 컨슈머가 메시지를 소비하지 못하고 있습니다. 로그에서 'max.poll.interval.ms exceeded'가 보이는데, 이것이 무엇을 의미하고 왜 전체 컨슈머가 멈추는지 분석해보세요.",
+        q: "배송 서비스가 메시지를 소비하지 못하는 원인은?",
+        hint: "컨슈머가 poll()을 호출하지 않으면 Kafka는 그 컨슈머가 죽었다고 판단합니다.",
+        ch: [
+          { id: "A", text: "외부 API 지연으로 poll 간격 초과 → 컨슈머 리밸런싱 루프", desc: "메시지 처리 180초 > max.poll.interval 300초, 반복 리밸런싱으로 전체 중단", g: "best", nx: "s12fix",
+            impact: { "원인": "정확 파악", "복구": "설정 + 비동기 전환" } },
+          { id: "B", text: "Kafka 브로커 장애", desc: "브로커가 죽어서 메시지 전달 안 됨", g: "bad", nx: "s12_bad",
+            impact: { "원인": "잘못된 방향", "복구": "시간 낭비" } },
+          { id: "C", text: "토픽 파티션 수가 부족해서", desc: "파티션 3개로는 처리량 부족", g: "ok", nx: "s12fix",
+            impact: { "원인": "부분적", "복구": "파티션만 늘려도 근본 해결 안 됨" } }
+        ],
+        fb: {
+          A: { t: "🟢 정확한 진단!", b: "외부 물류 API가 60초 이상 걸리면서 **단일 메시지 처리에 180초** 소요. poll() 간격이 max.poll.interval.ms(300초)에 근접하고, 간헐적 초과 시 **리밸런싱이 반복**되어 전체 컨슈머가 멈춥니다.", cost: "마감까지 **3시간**. 즉시 조치하지 않으면 **새벽배송 5만 건이 모두 지연**됩니다.", r: "Kafka 컨슈머의 max.poll.interval.ms와 session.timeout.ms는 가장 흔한 장애 원인 중 하나입니다." },
+          B: { t: "🔴 브로커는 정상", b: "프로듀서가 정상 발행 중이므로 **브로커는 살아있습니다.** 문제는 컨슈머 측입니다.", cost: "브로커 쪽만 살피면 **시간만 낭비**됩니다.", r: "" },
+          C: { t: "🟡 부분적", b: "파티션을 늘리면 병렬 처리는 되지만, **개별 메시지 처리가 180초인 근본 문제**는 해결되지 않습니다.", cost: "파티션을 늘려도 **리밸런싱 루프**는 계속됩니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "poll 간격+비동기", time: "1시간", risk: "낮음", dataLoss: "없음", note: "근본 해결" },
+          { option: "브로커 점검", time: "30분", risk: "없음", dataLoss: "시간 낭비", note: "잘못된 방향" },
+          { option: "파티션 증가", time: "20분", risk: "낮음", dataLoss: "없음", note: "부분 개선" }
+        ]
+      },
+      s12_bad: {
+        time: "21:30", title: "브로커 점검 — 시간 낭비", phase: "action",
+        nar: ["Kafka 브로커 3대를 모두 확인했지만 **전부 정상**입니다. 프로듀서도 정상 발행 중.", "30분을 허비한 뒤, 컨슈머 로그를 다시 보니 **max.poll.interval.ms 초과로 리밸런싱 반복** 중인 것을 발견했습니다."],
+        clues: {
+          prompt: "컨슈머 문제의 근본 원인을 확인합니다.",
+          options: [
+            { id: "consumer2", label: "📋 컨슈머 상세 로그", content: [
+              { t: "21:15", lv: "error", m: "processDelivery() took 183s — logistics API response slow" },
+              { t: "21:18", lv: "error", m: "Rebalance #47 — consumer kicked out, partitions reassigned" },
+              { t: "21:20", lv: "error", m: "All 3 consumers in rebalance loop — effective throughput: 0" }
+            ]},
+            { id: "lag2", label: "📊 랙 추이", metrics: [
+              { l: "21:00 랙", v: "521K", s: "danger", u: "" },
+              { l: "21:30 랙", v: "583K", s: "danger", u: "+62K (30분)" },
+              { l: "마감까지", v: "2.5시간", s: "danger", u: "시간 부족" }
+            ]},
+            { id: "api", label: "🌐 외부 API 상태", content: [
+              { t: "", lv: "warn", m: "물류 파트너 API p99: 45s (평소 2s)" },
+              { t: "", lv: "error", m: "파트너사 서버 과부하 — 응답 지연 중" }
+            ]}
+          ]
+        },
+        freeFirst: "30분을 허비했습니다. **프로듀서가 정상이면 문제는 어디에 있는 건지**, 처음부터 어떤 메트릭을 봤어야 했는지 적어보세요.",
+        slack: { name: "물류팀 이팀장", time: "21:25", body: "새벽배송 피킹 **한 건도 못 시작**했어요. 마감까지 2시간 반인데 이대로면 **5만 건 전부 지연 배송**이에요. 고객한테 뭐라고 하죠?" },
+        timer: 20,
+        q: "원인을 파악했습니다. 어떻게 복구하시겠습니까?",
+        ch: [
+          { id: "A", text: "max.poll.interval.ms 늘리기 + 외부 API 비동기 전환", desc: "즉시 설정 변경으로 리밸런싱 중단 + 비동기로 API 분리", g: "best", nx: "s12fix",
+            impact: { "리밸런싱": "즉시 중단", "처리 속도": "복구", "시간": "1시간" } },
+          { id: "B", text: "컨슈머를 10개로 늘림", desc: "더 많은 컨슈머로 병렬 처리", g: "ok", nx: "s12fix",
+            impact: { "리밸런싱": "악화 가능", "처리 속도": "파티션 수 제한", "시간": "20분" } }
+        ],
+        fb: {
+          A: { t: "🟢 올바른 조치", b: "max.poll.interval.ms를 늘려 **리밸런싱 루프를 즉시 중단**하고, 외부 API 호출을 **비동기로 분리**하여 poll 간격을 유지합니다.", cost: "설정 변경 후 컨슈머 **재시작이 필요**하고, 비동기 전환에 코드 수정이 필요합니다.", r: "" },
+          B: { t: "🟡 효과 제한", b: "컨슈머가 파티션 수(3개)보다 많으면 **놀고 있는 컨슈머**가 생깁니다. 근본 원인(리밸런싱 루프)을 해결하지 않으면 10개도 멈춥니다.", cost: "리밸런싱에 컨슈머가 더 많이 참여하면 **오히려 더 불안정**해질 수 있습니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "설정 변경+비동기", time: "1시간", risk: "낮음", dataLoss: "없음", note: "근본 해결" },
+          { option: "컨슈머 증가", time: "20분", risk: "악화 가능", dataLoss: "없음", note: "파티션 수 제한" }
+        ]
+      },
+      s12fix: {
+        time: "22:00", title: "재발 방지 — 컨슈머 안정화", phase: "postmortem",
+        nar: ["max.poll.interval.ms 늘리고 컨슈머 재시작. 리밸런싱 루프 해소. 랙이 줄어들기 시작합니다.", "하지만 **52만 건의 밀린 메시지**를 마감까지 소화해야 합니다. 그리고 **같은 문제가 다시 발생하지 않도록** 구조를 바꿔야 합니다."],
+        clues: {
+          prompt: "밀린 메시지 처리와 재발 방지 전략을 비교합니다.",
+          options: [
+            { id: "async", label: "📋 비동기 전환", content: [
+              { t: "", lv: "info", m: "외부 API 호출을 별도 스레드풀로 분리 → poll()과 처리를 분리" },
+              { t: "", lv: "info", m: "CompletableFuture로 API 호출, 결과는 콜백으로 처리" },
+              { t: "", lv: "warn", m: "순서 보장 필요 시 파티션 키 기반 순서 유지 설계 필요" }
+            ]},
+            { id: "dlq", label: "📋 DLQ 전략", content: [
+              { t: "", lv: "info", m: "처리 실패 메시지 → DLQ 토픽으로 이동 → 나중에 재처리" },
+              { t: "", lv: "warn", m: "DLQ에 쌓이는 건수 모니터링 + 알림 필수" },
+              { t: "", lv: "info", m: "재처리 로직에 멱등성 보장 필수 (중복 배송 방지)" }
+            ]},
+            { id: "monitor", label: "📊 컨슈머 모니터링", metrics: [
+              { l: "Consumer Lag 알림", v: "미설정", s: "danger", u: "임계치 알림 필요" },
+              { l: "처리 시간 알림", v: "미설정", s: "danger", u: "처리 지연 감지" },
+              { l: "리밸런싱 알림", v: "미설정", s: "warning", u: "반복 시 알림" }
+            ]}
+          ]
+        },
+        freeFirst: "같은 상황이 반복되지 않으려면 Kafka 컨슈머를 어떻게 설계해야 할까요? **외부 API 호출과 메시지 소비를 분리하는 방법**을 설명해보세요.",
+        slack: { name: "CTO 박서연", time: "21:55", body: "랙 줄어드는 거 확인했습니다. 마감 전에 소화 가능한가요? 그리고 포스트모템에 **컨슈머 모니터링·랙 알림·DLQ** 안 올려주세요. 이번처럼 50만 건 밀려서 발견되면 안 됩니다." },
+        timer: 30,
+        q: "어떤 재발 방지 대책을 도입하시겠습니까?",
+        ch: [
+          { id: "A", text: "외부 API 비동기 전환 + DLQ + Consumer Lag 알림 + 파티션 확장", desc: "처리와 소비 분리, 실패 메시지 DLQ, 랙 임계치 알림, 파티션 6→12개", g: "best", nx: "end",
+            impact: { "리밸런싱": "구조적 방지", "실패 처리": "DLQ 자동화", "모니터링": "랙+처리시간 알림" } },
+          { id: "B", text: "max.poll.interval.ms만 넉넉하게 설정", desc: "설정값을 크게 올려 리밸런싱 방지", g: "ok", nx: "end",
+            impact: { "리밸런싱": "임시 완화", "실패 처리": "없음", "모니터링": "없음" } }
+        ],
+        fb: {
+          A: { t: "🟢 프로덕션 레디 설계!", b: "**비동기 전환**: poll()과 처리를 분리하여 리밸런싱 방지. **DLQ**: 실패 메시지를 별도 토픽으로 이동하여 재처리. **Consumer Lag 알림**: 임계치 초과 시 즉시 감지.", cost: "비동기 전환 시 **순서 보장·에러 핸들링**이 복잡해지므로 파티션 키 설계가 중요합니다.", r: "배달의민족, 쿠팡 등은 Kafka 컨슈머에 DLQ와 Lag 알림을 필수로 운영합니다." },
+          B: { t: "🟡 미봉책", b: "interval을 늘려도 **외부 API가 더 느려지면 또 같은 문제**. 근본적으로 처리와 소비를 분리해야 합니다.", cost: "interval을 너무 늘리면 **죽은 컨슈머를 감지하는 시간도 늘어나** 다른 장애 대응이 느려집니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "비동기+DLQ+모니터링", time: "1주", risk: "매우 낮음", dataLoss: "없음", note: "현업 표준" },
+          { option: "설정값만 변경", time: "즉시", risk: "재발 높음", dataLoss: "없음", note: "임시 완화" }
+        ]
+      },
+      end: { type: "end" }
+    },
+    pm: {
+      rc: "외부 물류 API 지연으로 Kafka 컨슈머 poll 간격 초과 → 반복 리밸런싱으로 전체 컨슈머 중단. Consumer Lag 모니터링 부재로 50만 건 누적 후 발견.",
+      qa: [
+        { q: "Consumer Lag이란?", a: "프로듀서가 보낸 메시지 중 컨슈머가 아직 처리하지 못한 메시지 수. 랙이 커지면 실시간 처리가 지연됨." },
+        { q: "max.poll.interval.ms란?", a: "Kafka 컨슈머가 poll() 호출 사이의 최대 허용 시간. 초과 시 컨슈머가 죽은 것으로 판단하여 리밸런싱 발생." },
+        { q: "컨슈머 리밸런싱이란?", a: "컨슈머 그룹에서 파티션 할당이 재조정되는 과정. 빈번하면 처리가 멈추고 랙이 급증." }
+      ],
+      checklist: [
+        "Kafka 컨슈머의 `max.poll.interval.ms`와 `session.timeout.ms` 설정을 확인하고, 메시지 처리 시간과 비교하세요.",
+        "컨슈머에서 외부 API를 호출한다면 **비동기로 분리**하여 poll() 간격을 유지하는 설계를 해보세요.",
+        "Consumer Lag이 임계치(예: 10,000)를 넘으면 Slack 알림이 오도록 모니터링을 설정하세요.",
+        "처리 실패 메시지를 DLQ 토픽으로 보내는 로직을 구현하고, DLQ 건수 알림을 추가하세요."
+      ],
+      pl: "물류 프로젝트에서 Kafka 기반 이벤트 처리에 DLQ와 Consumer Lag 모니터링을 적용하면 인프라 역량 어필.",
+      nextRec: [{id:"sc1",reason:"Kafka 장애가 서비스 전체로 전파되는 Cascading Failure를 경험해보세요"},{id:"sc9",reason:"이벤트 기반 아키텍처에서 SAGA 패턴도 함께 익혀보세요"}],
+      interviewQs: [
+        "Kafka Consumer Lag이란 무엇이고, 모니터링해야 하는 이유는?",
+        "Kafka 컨슈머의 max.poll.interval.ms를 초과하면 어떤 일이 발생하나요? 어떻게 방지하나요?",
+        "Kafka에서 메시지 처리 실패 시 DLQ(Dead Letter Queue) 전략을 설명해주세요."
+      ],
+      codeChallenge: {
+        title: "Kafka 컨슈머 비동기 처리 + DLQ 구현",
+        prompt: "외부 API 호출이 느려도 Kafka 컨슈머가 리밸런싱되지 않도록 비동기 처리를 구현하고, 실패 메시지는 DLQ로 보내세요.",
+        starterCode: "@Component\npublic class DeliveryConsumer {\n\n    private final LogisticsClient logisticsClient;\n    private final KafkaTemplate<String, String> kafkaTemplate;\n\n    @KafkaListener(topics = \"order-events\", groupId = \"delivery-consumer\")\n    public void consume(ConsumerRecord<String, String> record) {\n        // 현재: 동기 호출 — 느리면 리밸런싱 발생\n        // TODO: 비동기 처리 + DLQ 구현\n        // 1. 외부 API 호출을 CompletableFuture로 비동기 처리\n        // 2. 실패 시 재시도 (최대 3회)\n        // 3. 최종 실패 시 DLQ 토픽으로 전송\n        logisticsClient.createShipment(record.value());\n    }\n}",
+        hint: "CompletableFuture.supplyAsync()로 외부 호출을 별도 스레드에서 실행하고, exceptionally()에서 DLQ 전송 로직을 구현하세요."
       }
     }
   }

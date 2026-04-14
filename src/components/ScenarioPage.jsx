@@ -104,9 +104,12 @@ export default function ScenarioPage() {
   const node = sc.nodes[state.nodeId];
   const isEnd = node?.type === 'end';
 
-  if (isEnd) clearSavedState(id);
+  useEffect(() => {
+    if (isEnd) clearSavedState(id);
+  }, [isEnd, id]);
 
   if (state.nodeId === 'intro') {
+    const saved = showResume ? getSavedState(id) : null;
     return (
       <>
         {showResume && (
@@ -114,7 +117,7 @@ export default function ScenarioPage() {
             <div className="resume-banner__inner">
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>진행 중인 시뮬레이션이 있습니다</div>
-                <div style={{ fontSize: 12, color: 'var(--sec)' }}>STEP {getSavedState(id)?.hist?.length + 1 || '?'} · 점수 {getSavedState(id)?.score || 0}점</div>
+                <div style={{ fontSize: 12, color: 'var(--sec)' }}>STEP {saved?.hist?.length + 1 || '?'} · 점수 {saved?.score || 0}점</div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="btn btn--primary btn--sm" onClick={handleResume}>이어하기</button>

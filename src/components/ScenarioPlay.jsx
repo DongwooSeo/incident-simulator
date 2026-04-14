@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { GC } from '../utils/constants';
 import { bold } from '../utils/helpers';
@@ -42,12 +42,68 @@ ${history}
 5. 한국어로 답변하세요.`;
 }
 
+function ChoiceFeedback({ node, state, onNext }) {
+  const ch = node.ch.find(c => c.id === state.sel);
+  const fb = node.fb[state.sel];
+  const gc = GC[ch.g];
+  return (
+    <>
+      <div className="feedback" style={{ background: `${gc.color}08`, border: `1px solid ${gc.color}40` }}>
+        <div className="feedback__title" style={{ color: gc.color }}>{fb.t}</div>
+        <div className="feedback__body">{bold(fb.b)}</div>
+        {fb.cost && (
+          <div style={{ marginTop: 10, padding: '10px 12px', background: 'rgba(234,179,8,0.06)', borderRadius: 6, border: '1px solid rgba(234,179,8,0.2)', fontSize: 13, color: 'var(--sec)', lineHeight: 1.65 }}>
+            <strong style={{ color: 'var(--yellow)' }}>숨은 비용 · 리스크:</strong> {bold(fb.cost)}
+          </div>
+        )}
+        {fb.r && (
+          <div className="feedback__ref">
+            💡 <strong style={{ color: 'var(--blue)' }}>현업:</strong> {fb.r}
+          </div>
+        )}
+      </div>
+
+      {node.tradeoff && (
+        <div className="tradeoff" style={{ marginTop: 14 }}>
+          <div className="tradeoff__header">📊 트레이드오프 비교</div>
+          <div className="tradeoff__scroll">
+            <table>
+              <thead>
+                <tr>
+                  {['선택지', '소요시간', '리스크', '데이터 영향', '비고'].map(h => <th key={h}>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {node.tradeoff.map((row, i) => (
+                  <tr key={i}>
+                    <td style={{ fontWeight: 600, color: 'var(--text)' }}>{row.option}</td>
+                    <td>{row.time}</td>
+                    <td style={{ color: ['높음', '매우 높음', '최대'].includes(row.risk) ? 'var(--red)' : row.risk === '중간' ? 'var(--yellow)' : 'var(--green)' }}>{row.risk}</td>
+                    <td>{row.dataLoss}</td>
+                    <td>{row.note}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <button className="btn btn--secondary" style={{ marginTop: 16 }} onClick={onNext}>다음 상황으로 →</button>
+    </>
+  );
+}
+
 export default function ScenarioPlay({ sc, node, state, dispatch }) {
   const timerRef = useRef(null);
   const nudgeRef = useRef(null);
   const chatEndRef = useRef(null);
+  const abortRef = useRef(null);
   const stepNum = state.hist.length + 1;
-  const totalSteps = state.hist.length + stepsToEnd(sc.nodes, state.nodeId);
+  const totalSteps = useMemo(
+    () => state.hist.length + stepsToEnd(sc.nodes, state.nodeId),
+    [sc.nodes, state.nodeId, state.hist.length],
+  );
 
   /* ── Timer ── */
   useEffect(() => {
@@ -63,7 +119,10 @@ export default function ScenarioPlay({ sc, node, state, dispatch }) {
     return () => clearInterval(timerRef.current);
   }, [state.timerActive, state.revealed]);
 
-  useEffect(() => () => clearTimeout(nudgeRef.current), []);
+  useEffect(() => () => {
+    clearTimeout(nudgeRef.current);
+    abortRef.current?.abort();
+  }, []);
 
   /* ── Chat auto-scroll ── */
   useEffect(() => {
@@ -84,6 +143,10 @@ export default function ScenarioPlay({ sc, node, state, dispatch }) {
     dispatch({ type: 'ADD_MSG', msg: userMsg, clearFree: isFirst, clearInput: !isFirst });
     dispatch({ type: 'CHAT_LOADING', v: true });
 
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
     try {
       const cluesSummary = Object.keys(state.cluesRevealed).length > 0
         ? '학생이 확인한 정보: ' + Object.keys(state.cluesRevealed).join(', ')
@@ -94,6 +157,7 @@ export default function ScenarioPlay({ sc, node, state, dispatch }) {
       const resp = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: ctrl.signal,
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 600,
@@ -112,7 +176,14 @@ export default function ScenarioPlay({ sc, node, state, dispatch }) {
       const aiText = data.content?.map(c => c.text || '').join('') || '피드백을 생성하지 못했습니다.';
       dispatch({ type: 'ADD_MSG', msg: { role: 'assistant', content: aiText } });
     } catch (e) {
-      dispatch({ type: 'ADD_MSG', msg: { role: 'assistant', content: `AI 멘토 연결 실패: ${e.message}. 건너뛰기로 선택지를 확인할 수 있습니다.` } });
+      if (e.name === 'AbortError') return;
+      const fallbackTips = [
+        '힌트: 로그와 메트릭에서 가장 이상한 수치를 먼저 찾아보세요.',
+        '힌트: 장애의 범위(어떤 서비스, 어떤 기능)를 먼저 확인해보세요.',
+        '힌트: "고객에게 미치는 영향"을 기준으로 우선순위를 잡아보세요.',
+      ];
+      const tip = fallbackTips[state.chatMessages.length % fallbackTips.length];
+      dispatch({ type: 'ADD_MSG', msg: { role: 'assistant', content: `AI 멘토 연결에 실패했습니다. (${e.message})\n\n대신 한 가지 팁을 드릴게요 — ${tip}\n\n'건너뛰기'로 선택지를 확인할 수 있습니다.` } });
     }
 
     dispatch({ type: 'CHAT_LOADING', v: false });
@@ -154,7 +225,7 @@ export default function ScenarioPlay({ sc, node, state, dispatch }) {
           {state.timerExpired && !state.revealed && (
             <span aria-live="assertive" style={{ marginLeft: 'auto', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--red)', animation: 'pulse 1s infinite' }}>⏱ 시간 초과! (−5점)</span>
           )}
-          <Link to="/" style={{ marginLeft: state.timerActive ? 0 : 'auto', fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)', textDecoration: 'none' }}>← 홈</Link>
+          <Link to="/" className="back-nav" style={{ marginLeft: state.timerActive ? 0 : 'auto' }}>← 홈</Link>
         </div>
 
         {/* ── Progress bar ── */}
@@ -305,7 +376,7 @@ export default function ScenarioPlay({ sc, node, state, dispatch }) {
                   </div>
                 ))}
                 {state.chatLoading && (
-                  <div className="chat-bubble chat-bubble--ai"><span style={{ animation: 'pulse 1s infinite' }}>AI 멘토가 생각하는 중...</span></div>
+                  <div className="chat-bubble chat-bubble--ai"><span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>AI 멘토가 생각하는 중 <span className="loading-dots"><span /><span /><span /></span></span></div>
                 )}
                 <div ref={chatEndRef} />
               </div>
@@ -395,57 +466,7 @@ export default function ScenarioPlay({ sc, node, state, dispatch }) {
             )}
 
             {/* ── Feedback ── */}
-            {state.revealed && (() => {
-              const ch = node.ch.find(c => c.id === state.sel);
-              const fb = node.fb[state.sel];
-              const gc = GC[ch.g];
-              return (
-                <>
-                  <div className="feedback" style={{ background: `${gc.color}08`, border: `1px solid ${gc.color}40` }}>
-                    <div className="feedback__title" style={{ color: gc.color }}>{fb.t}</div>
-                    <div className="feedback__body">{bold(fb.b)}</div>
-                    {fb.cost && (
-                      <div style={{ marginTop: 10, padding: '10px 12px', background: 'rgba(234,179,8,0.06)', borderRadius: 6, border: '1px solid rgba(234,179,8,0.2)', fontSize: 13, color: 'var(--sec)', lineHeight: 1.65 }}>
-                        <strong style={{ color: 'var(--yellow)' }}>숨은 비용 · 리스크:</strong> {bold(fb.cost)}
-                      </div>
-                    )}
-                    {fb.r && (
-                      <div className="feedback__ref">
-                        💡 <strong style={{ color: 'var(--blue)' }}>현업:</strong> {fb.r}
-                      </div>
-                    )}
-                  </div>
-
-                  {node.tradeoff && (
-                    <div className="tradeoff" style={{ marginTop: 14 }}>
-                      <div className="tradeoff__header">📊 트레이드오프 비교</div>
-                      <div className="tradeoff__scroll">
-                        <table>
-                          <thead>
-                            <tr>
-                              {['선택지', '소요시간', '리스크', '데이터 영향', '비고'].map(h => <th key={h}>{h}</th>)}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {node.tradeoff.map((row, i) => (
-                              <tr key={i}>
-                                <td style={{ fontWeight: 600, color: 'var(--text)' }}>{row.option}</td>
-                                <td>{row.time}</td>
-                                <td style={{ color: ['높음', '매우 높음', '최대'].includes(row.risk) ? 'var(--red)' : row.risk === '중간' ? 'var(--yellow)' : 'var(--green)' }}>{row.risk}</td>
-                                <td>{row.dataLoss}</td>
-                                <td>{row.note}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-
-                  <button className="btn btn--secondary" style={{ marginTop: 16 }} onClick={goNext}>다음 상황으로 →</button>
-                </>
-              );
-            })()}
+            {state.revealed && <ChoiceFeedback node={node} state={state} onNext={goNext} />}
           </section>
         )}
       </div>
