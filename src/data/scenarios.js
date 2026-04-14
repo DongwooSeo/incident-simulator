@@ -215,7 +215,7 @@ export const SCENARIOS = [
             ]}
           ]
         },
-        freeFirst: "장기 개선을 논의합니다. **기술·프로세스·조직** 중 이번 사고에서 가장 먼저 손대야 할 축은 무엇이라고 보시나요? (한두 문장)",
+        freeFirst: "CTO가 경영진 브리핑에 올릴 **장애 보고서 요약 3줄**을 작성해주세요. [장애 원인] [비즈니스 영향] [재발 방지 대책]을 포함해야 합니다.",
         q: "장기 개선안을 선택하세요.",
         ch: [
           { id: "A", text: "비동기 전환(Kafka) + 서킷 브레이커 상시 적용", desc: "이벤트 기반 전환, 모든 외부 호출에 방어 장치", g: "ok", nx: "end" },
@@ -246,7 +246,18 @@ export const SCENARIOS = [
       nextRec: [
         { id: "sc9", reason: "이 장애의 근본 원인인 '분산 트랜잭션'을 더 깊이 파헤쳐보세요" },
         { id: "sc4", reason: "서비스 간 장애 전파를 막는 또 다른 인프라 전략을 경험해보세요" }
-      ]
+      ],
+      interviewQs: [
+        "MSA 환경에서 하나의 서비스 장애가 전체로 전파되는 것을 어떻게 막을 수 있나요?",
+        "서킷 브레이커 패턴의 3가지 상태(Closed, Open, Half-Open)와 각각의 동작을 설명해주세요.",
+        "장애 상황에서 긴급 완화(Mitigation)와 근본 해결(Fix)을 분리해야 하는 이유는 무엇인가요?"
+      ],
+      codeChallenge: {
+        title: "Resilience4j 서킷 브레이커 + Fallback 구현",
+        prompt: "주문 서비스에서 배송 서비스를 호출할 때 서킷 브레이커와 fallback을 구현하세요. 배송 서비스가 장애 시 주문은 성공하되 배송은 나중에 처리되도록 해야 합니다.",
+        starterCode: "@Service\npublic class OrderService {\n\n    private final DeliveryClient deliveryClient;\n\n    public OrderResponse createOrder(OrderRequest req) {\n        // TODO: 서킷 브레이커 + fallback 구현\n        // 배송 서비스 장애 시에도 주문은 성공해야 합니다\n        deliveryClient.requestDelivery(req.getOrderId());\n        return new OrderResponse(req.getOrderId(), \"SUCCESS\");\n    }\n}",
+        hint: "@CircuitBreaker 어노테이션의 name, fallbackMethod 속성을 활용하세요. fallback 메서드에서는 실패한 배송 요청을 어딘가에 저장해야 합니다."
+      }
     }
   },
   {
@@ -442,7 +453,18 @@ export const SCENARIOS = [
       nextRec: [
         { id: "sc3", reason: "재고 관리에서도 데이터 정합성 문제가 발생합니다" },
         { id: "sc9", reason: "MSA에서 서비스 간 정합성을 보장하는 SAGA 패턴을 경험해보세요" }
-      ]
+      ],
+      interviewQs: [
+        "API 멱등성이란 무엇이고, 왜 결제 시스템에서 필수적인가요?",
+        "분산 환경에서 Redis SETNX를 이용한 멱등성 구현 방법과 주의할 점을 설명해주세요.",
+        "클라이언트 재시도(retry)가 발생하는 상황과 서버 측에서 이를 안전하게 처리하는 방법은?"
+      ],
+      codeChallenge: {
+        title: "Redis SETNX 기반 결제 멱등성 구현",
+        prompt: "결제 API에서 동일한 orderId로 중복 요청이 와도 한 번만 처리되도록 Redis 기반 멱등성 체크 로직을 구현하세요.",
+        starterCode: "@Service\npublic class PaymentService {\n\n    private final RedisTemplate<String, String> redis;\n    private final PgClient pgClient;\n\n    public PaymentResult processPayment(String orderId, int amount) {\n        // TODO: Redis SETNX로 멱등성 체크\n        // 이미 처리된 결제면 기존 결과 반환\n        // 새 결제면 PG 호출 후 결과 저장\n        return pgClient.charge(orderId, amount);\n    }\n}",
+        hint: "SETNX의 TTL 설정, 결제 실패 시 키 삭제 여부, fail-open vs fail-closed 정책을 고려하세요."
+      }
     }
   },
   {
@@ -557,7 +579,7 @@ export const SCENARIOS = [
             ]}
           ]
         },
-        freeFirst: "기술적으론 환불이 맞지만, **감정·신뢰** 측면에서 고객에게 무엇을 더해야 한다고 보시나요?",
+        freeFirst: "초과 판매로 취소되는 312명의 고객에게 보낼 **사과 안내 메시지**를 작성해보세요. '구매 성공했는데 왜 취소?'라는 분노를 고려해야 합니다. 환불 + 보상 + 재구매 안내를 포함하세요.",
         slack: { name: "CS팀 이팀장", time: "12:40", body: "312명 분량인데 전화가 끊기질 않아요. **'팬싸 당첨됐다고 했는데 취소?'** 이런 말부터 나와요. 보상 틀만이라도 먼저 잡아주세요, 안 그럼 녹음본 돌아다녀요." },
         met: [
           { l: "취소 대상", v: "312건", s: "danger", u: "서버 확장 후 추가분 포함" },
@@ -638,7 +660,18 @@ export const SCENARIOS = [
         "k6·JMeter로 **동시 100건** 주문을 날려 보고, 재고 음수·초과 판매가 재현되는지 확인하세요."
       ],
       pl: "물류 프로젝트에서 주문 시 재고 차감에 원자적 UPDATE를 적용하면 동시성 제어 경험 어필.",
-      nextRec: [{id:"sc8",reason:"정산 정합성 문제를 경험해보세요 — 이커머스에서 돈 계산이 틀리면 사업이 멈춥니다"},{id:"sc2",reason:"결제에서도 동시 요청 문제가 발생합니다"}]
+      nextRec: [{id:"sc8",reason:"정산 정합성 문제를 경험해보세요 — 이커머스에서 돈 계산이 틀리면 사업이 멈춥니다"},{id:"sc2",reason:"결제에서도 동시 요청 문제가 발생합니다"}],
+      interviewQs: [
+        "동시성 문제(Race Condition)란 무엇이고, 이커머스 재고 관리에서 어떻게 발생하나요?",
+        "비관적 락, 낙관적 락, 원자적 UPDATE의 차이점과 각각의 적합한 상황을 설명해주세요.",
+        "초과 판매가 발생했을 때 기술적 조치와 비즈니스 대응을 각각 어떻게 하시겠습니까?"
+      ],
+      codeChallenge: {
+        title: "원자적 UPDATE로 재고 동시성 제어",
+        prompt: "동시에 수천 명이 같은 상품을 주문할 때 초과 판매가 발생하지 않도록 재고 차감 로직을 구현하세요. 기존의 SELECT → CHECK → UPDATE 패턴을 원자적으로 바꿔야 합니다.",
+        starterCode: "@Service\npublic class OrderService {\n\n    private final ProductRepository productRepo;\n\n    @Transactional\n    public OrderResult placeOrder(Long productId, int qty) {\n        // 기존 코드 (Race Condition 발생)\n        Product p = productRepo.findById(productId).orElseThrow();\n        if (p.getStock() >= qty) {\n            p.setStock(p.getStock() - qty);\n            productRepo.save(p);\n            return OrderResult.success();\n        }\n        return OrderResult.soldOut();\n    }\n}",
+        hint: "UPDATE 쿼리 하나로 조회+검증+차감을 원자적으로 처리하고, affected rows == 0이면 품절로 처리하세요."
+      }
     }
   },
   {
@@ -758,9 +791,9 @@ export const SCENARIOS = [
         q: "캐시 워밍업을 어떻게?",
         hint: "같은 상품을 수천 명이 동시 조회하면 같은 DB 쿼리가 수천 번 실행됩니다.",
         ch: [
-          { id: "A", text: "Mutex Lock: 캐시 미스 시 하나만 DB 조회, 나머지 대기", desc: "Redis SETNX로 락. 같은 키에 DB 쿼리 1번만.", g: "best", nx: "end" },
-          { id: "B", text: "인기 상품 Top 1000 배치 캐싱", desc: "핫 데이터 우선 워밍업", g: "ok", nx: "end" },
-          { id: "C", text: "TTL 랜덤 설정으로 동시 만료 방지", desc: "jitter로 만료 시점 분산", g: "ok", nx: "end" }
+          { id: "A", text: "Mutex Lock: 캐시 미스 시 하나만 DB 조회, 나머지 대기", desc: "Redis SETNX로 락. 같은 키에 DB 쿼리 1번만.", g: "best", nx: "s4m" },
+          { id: "B", text: "인기 상품 Top 1000 배치 캐싱", desc: "핫 데이터 우선 워밍업", g: "ok", nx: "s4m" },
+          { id: "C", text: "TTL 랜덤 설정으로 동시 만료 방지", desc: "jitter로 만료 시점 분산", g: "ok", nx: "s4m" }
         ],
         fb: {
           A: { t: "🟢 Cache Stampede 방어 정석!", b: "**Mutex Lock 패턴**: 캐시 미스 시 SETNX 락, 성공하면 DB 조회+캐시 SET, 실패하면 짧게 대기 후 재시도. 같은 키에 **DB 쿼리 1번만**.", cost: "락 대기로 **지연(latency) 스파이크**가 날 수 있어 타임아웃·큐 설정이 필요합니다.", r: "Look-aside Cache + Mutex는 대규모 서비스 필수 패턴." },
@@ -771,6 +804,44 @@ export const SCENARIOS = [
           { option: "Mutex Lock", time: "즉시 적용", risk: "낮음", dataLoss: "없음", note: "DB 쿼리 1회만 실행" },
           { option: "배치 워밍업", time: "5~10분", risk: "낮음", dataLoss: "없음", note: "보조 전략" },
           { option: "TTL jitter", time: "다음 만료 시", risk: "없음", dataLoss: "없음", note: "예방만 가능" }
+        ]
+      },
+      s4m: {
+        time: "10:30", title: "재발 방지 — 캐시 운영 설계", phase: "postmortem",
+        nar: ["캐시 히트율이 92%까지 복구되었습니다. 이제 포스트모템에서 **다시는 Redis OOM → Cache Stampede가 발생하지 않을 설계**를 제안해야 합니다.", "CTO: '캐시가 날아가면 또 DB가 죽는 구조를 근본적으로 바꿔야 합니다.'"],
+        clues: {
+          prompt: "캐시 운영 전략을 비교합니다.",
+          options: [
+            { id: "oom", label: "📋 OOM 원인", content: [
+              { t: "", lv: "error", m: "maxmemory 4GB, 사용량 3.9GB — eviction policy: noeviction → OOM" },
+              { t: "", lv: "info", m: "allkeys-lru로 변경 시 자동으로 오래된 키 삭제" }
+            ]},
+            { id: "ttl", label: "📊 TTL 분석", metrics: [
+              { l: "TTL 없는 키", v: "23%", s: "danger", u: "메모리 누수 원인" },
+              { l: "핫키 집중도", v: "상위 1%가 40%", s: "warning", u: "스탬피드 위험" }
+            ]},
+            { id: "warm", label: "🛠 워밍업 자동화", content: [
+              { t: "", lv: "info", m: "배포·장애 후 자동 워밍업 스크립트 — Top 1000 키 사전 로드" },
+              { t: "", lv: "warn", m: "프로모션 시작 30분 전 Cache Warming 배치 트리거" }
+            ]}
+          ]
+        },
+        freeFirst: "이번 OOM의 근본 원인은 **eviction policy**였습니다. maxmemory-policy를 어떻게 설정하고, 핫키 스탬피드를 구조적으로 방지할 전략을 적어보세요.",
+        slack: { name: "CTO 박서연", time: "10:25", body: "복구 수고했습니다. 하지만 **Redis 죽으면 서비스 전체가 죽는 구조**가 문제예요. 이번 주 포스트모템에 **maxmemory 정책, 모니터링 알림, 워밍업 자동화** 세 가지 대책을 올려주세요." },
+        q: "Redis 운영 안정화를 위해 어떤 대책을 도입하시겠습니까?",
+        ch: [
+          { id: "A", text: "maxmemory-policy 변경 + TTL 필수화 + 메모리 알림 + 워밍업 자동화", desc: "allkeys-lru, 모든 키 TTL 의무, 메모리 80% 알림, 배포/장애 후 자동 워밍업", g: "best", nx: "end",
+            impact: { "OOM 재발": "구조적 방지", "스탬피드": "워밍업으로 완화", "운영 비용": "초기 1주" } },
+          { id: "B", text: "메모리만 늘림 (4GB → 16GB)", desc: "스펙업으로 여유 확보", g: "ok", nx: "end",
+            impact: { "OOM 재발": "일시적 완화", "스탬피드": "미해결", "운영 비용": "월 인프라 비용 증가" } }
+        ],
+        fb: {
+          A: { t: "🟢 시니어급 운영 설계!", b: "**allkeys-lru**: 메모리 부족 시 자동 키 삭제로 OOM 방지. **TTL 필수화**: 메모리 누수 원인 제거. **워밍업 자동화**: 배포·장애 후 히트율 빠른 복구.", cost: "기존 키에 TTL을 소급 적용하는 **마이그레이션 작업**이 필요합니다.", r: "대규모 서비스는 Redis 메모리 80% 알림 + allkeys-lru를 기본으로 사용합니다." },
+          B: { t: "🟡 미봉책", b: "메모리를 늘려도 eviction 없이 키가 쌓이면 **결국 다시 OOM**. 근본 원인이 남아있습니다.", cost: "월 인프라 비용만 커지고 **6개월 후 같은 사고**가 반복될 수 있습니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "정책+모니터링+워밍업", time: "1주", risk: "매우 낮음", dataLoss: "없음", note: "근본 해결" },
+          { option: "메모리 스펙업", time: "즉시", risk: "재발 높음", dataLoss: "없음", note: "임시 완화" }
         ]
       },
       end: { type: "end" }
@@ -788,7 +859,18 @@ export const SCENARIOS = [
         "Sentinel/Cluster 페일오버 시 앱이 **재연결·빈 캐시**를 가정하는지, 장애 runbook에 \"캐시 스탬피드 대응\" 한 줄이라도 적혀 있는지 점검하세요."
       ],
       pl: "물류 프로젝트에서 허브 정보를 캐싱했다면 Redis 장애 대응 전략을 포트폴리오에.",
-      nextRec: [{id:"sc1",reason:"캐시 장애가 서비스 전체로 전파되는 Cascading Failure를 경험해보세요"},{id:"sc7",reason:"Redis 장애로 장바구니가 통째로 날아가는 사고를 경험해보세요"}]
+      nextRec: [{id:"sc1",reason:"캐시 장애가 서비스 전체로 전파되는 Cascading Failure를 경험해보세요"},{id:"sc7",reason:"Redis 장애로 장바구니가 통째로 날아가는 사고를 경험해보세요"}],
+      interviewQs: [
+        "Cache Stampede(Thundering Herd)란 무엇이고, 어떻게 방지하나요?",
+        "Redis의 maxmemory-policy 종류와 이커머스에서 어떤 정책을 선택해야 하는지 설명해주세요.",
+        "캐시 장애 시 DB를 보호하면서 서비스를 유지하는 전략은 무엇인가요?"
+      ],
+      codeChallenge: {
+        title: "Mutex Lock 패턴 캐시 조회 구현",
+        prompt: "캐시 미스 시 동일 키에 대해 DB 쿼리가 한 번만 실행되도록 Redis SETNX 기반 Mutex Lock 패턴을 구현하세요.",
+        starterCode: "@Service\npublic class ProductCacheService {\n\n    private final RedisTemplate<String, String> redis;\n    private final ProductRepository productRepo;\n\n    public Product getProduct(Long id) {\n        String key = \"product:\" + id;\n        String cached = redis.opsForValue().get(key);\n        if (cached != null) return deserialize(cached);\n\n        // TODO: Mutex Lock 패턴 구현\n        // 1. 락 획득 시도\n        // 2. 락 성공: DB 조회 → 캐시 SET → 락 해제\n        // 3. 락 실패: 잠시 대기 후 재시도\n        Product p = productRepo.findById(id).orElseThrow();\n        redis.opsForValue().set(key, serialize(p), Duration.ofMinutes(10));\n        return p;\n    }\n}",
+        hint: "SETNX로 lock:{key}를 잡고, TTL을 짧게 설정하여 데드락을 방지하세요. 락 실패 시 Thread.sleep 후 캐시를 다시 확인합니다."
+      }
     }
   },
   {
@@ -907,11 +989,11 @@ export const SCENARIOS = [
         timer: 30,
         q: "어떤 방식?",
         ch: [
-          { id: "A", text: "Fetch Join 또는 @EntityGraph", desc: "연관 엔티티 한 번에 조회", g: "best", nx: "end",
+          { id: "A", text: "Fetch Join 또는 @EntityGraph", desc: "연관 엔티티 한 번에 조회", g: "best", nx: "s5v",
             impact: { "쿼리 수": "251 -> 1~2개", "응답시간": "20s -> 200ms", "주의사항": "컬렉션 페이징 주의" } },
-          { id: "B", text: "@BatchSize로 IN절 배치", desc: "IN절로 묶어 조회", g: "ok", nx: "end",
+          { id: "B", text: "@BatchSize로 IN절 배치", desc: "IN절로 묶어 조회", g: "ok", nx: "s5v",
             impact: { "쿼리 수": "251 -> 6개", "응답시간": "20s -> 400ms", "주의사항": "없음" } },
-          { id: "C", text: "Eager Loading 전환", desc: "@ManyToOne(fetch=EAGER)", g: "bad", nx: "end",
+          { id: "C", text: "Eager Loading 전환", desc: "@ManyToOne(fetch=EAGER)", g: "bad", nx: "s5v",
             impact: { "쿼리 수": "항상 JOIN", "응답시간": "다른 API도 느려짐", "주의사항": "전체 성능 저하" } }
         ],
         fb: {
@@ -923,6 +1005,45 @@ export const SCENARIOS = [
           { option: "Fetch Join", time: "즉시", risk: "컬렉션 페이징 주의", dataLoss: "없음", note: "251 -> 1~2쿼리" },
           { option: "@BatchSize", time: "즉시", risk: "없음", dataLoss: "없음", note: "251 -> 6쿼리" },
           { option: "Eager Loading", time: "즉시", risk: "높음", dataLoss: "없음", note: "전체 API 성능 저하" }
+        ]
+      },
+      s5v: {
+        time: "15:30", title: "배포 후 검증 — 성능 확인", phase: "postmortem",
+        nar: ["Fetch Join(또는 @BatchSize)을 적용하고 스테이징에서 쿼리 수를 확인했습니다. **251개 → 2개**로 줄었고, 응답시간은 **20s → 180ms**.", "하지만 PM이 '기획전 오픈 전에 **프로덕션에서도 확인**해달라'고 합니다. 배포 후 성능을 어떻게 검증하시겠습니까?"],
+        clues: {
+          prompt: "배포 후 성능 검증 방법을 비교합니다.",
+          options: [
+            { id: "p6spy", label: "📋 p6spy 로그", content: [
+              { t: "", lv: "info", m: "p6spy: SELECT ... FROM p_products JOIN p_categories — 1 query, 180ms" },
+              { t: "", lv: "info", m: "바인딩 파라미터까지 로그 출력 — 실행 계획 확인 가능" }
+            ]},
+            { id: "apm", label: "📊 APM 비교", metrics: [
+              { l: "수정 전", v: "251 쿼리 / 20s", s: "danger", u: "" },
+              { l: "수정 후", v: "2 쿼리 / 180ms", s: "ok", u: "99% 개선" },
+              { l: "DB CPU", v: "78% → 12%", s: "ok", u: "정상 범위" }
+            ]},
+            { id: "risk", label: "⚠ 배포 리스크", content: [
+              { t: "", lv: "warn", m: "Fetch Join 변경으로 다른 API에서 예상치 못한 쿼리 변화 가능" },
+              { t: "", lv: "info", m: "show-sql + 슬로우 쿼리 로그로 사이드 이펙트 모니터링" }
+            ]}
+          ]
+        },
+        freeFirst: "쿼리 수는 줄었지만, 프로덕션 배포 후 **사이드 이펙트가 없는지** 어떻게 확인하시겠어요? 모니터링해야 할 지표를 적어보세요.",
+        slack: { name: "PM 이주현", time: "15:25", body: "스테이징 180ms 확인했습니다! **배포 부탁드려요.** 단, 기획전 트래픽이 평소 3배니까 **배포 후 30분간 모니터링** 같이 봐주실 수 있나요? GA에서 PLP 전환율 실시간으로 올려놓을게요." },
+        q: "프로덕션 배포 후 어떻게 검증하시겠습니까?",
+        ch: [
+          { id: "A", text: "p6spy + APM 대시보드 + 슬로우 쿼리 알림 + 전환율 모니터링", desc: "쿼리 로그, 응답시간 대시보드, DB 슬로우 쿼리 알림, 비즈니스 지표 병행", g: "best", nx: "end",
+            impact: { "기술 검증": "쿼리 수·응답시간", "비즈니스 검증": "전환율·이탈률", "사이드 이펙트": "슬로우 쿼리 알림" } },
+          { id: "B", text: "배포 후 수동 확인 (API 호출 테스트)", desc: "curl로 몇 번 호출해서 응답시간 확인", g: "ok", nx: "end",
+            impact: { "기술 검증": "샘플 수준", "비즈니스 검증": "없음", "사이드 이펙트": "놓칠 수 있음" } }
+        ],
+        fb: {
+          A: { t: "🟢 현업 수준 검증!", b: "**기술 지표(쿼리 수, 응답시간) + 비즈니스 지표(전환율, 이탈률)** 두 축으로 검증. 슬로우 쿼리 알림으로 사이드 이펙트도 감지.", cost: "대시보드·알림 세팅에 **30분~1시간** 추가 소요되지만, 기획전 트래픽에서의 안전을 보장합니다.", r: "현업에서는 쿼리 튜닝 후 반드시 APM 기반 A/B 비교를 합니다." },
+          B: { t: "🟡 부분적", b: "수동 테스트는 **정상 케이스만 확인**. 트래픽 급증 시 페이징, 컬렉션 조인 문제 등은 놓칠 수 있습니다.", cost: "기획전 피크에서 **예상치 못한 슬로우 쿼리**가 터지면 대응이 늦어집니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "APM+알림+비즈니스 지표", time: "30분 세팅", risk: "매우 낮음", dataLoss: "없음", note: "종합 검증" },
+          { option: "수동 테스트만", time: "5분", risk: "사이드 이펙트 놓칠 수 있음", dataLoss: "없음", note: "샘플 확인" }
         ]
       },
       end: { type: "end" }
@@ -940,7 +1061,18 @@ export const SCENARIOS = [
         "p6spy(또는 datasource-proxy)로 **실행 SQL + 바인딩**을 남기고, 스테이징 데이터로 **기획전 기간 PLP**를 한 번 돌려 보세요."
       ],
       pl: "물류 프로젝트 주문+배송 목록 조회 시 N+1 발생 가능. Fetch Join 적용 어필.",
-      nextRec: [{id:"sc7",reason:"Redis 의존 데이터 유실 사고를 경험하고 캐시 전략을 점검해보세요"},{id:"sc4",reason:"DB 부하를 줄이는 캐시 전략도 중요합니다"}]
+      nextRec: [{id:"sc7",reason:"Redis 의존 데이터 유실 사고를 경험하고 캐시 전략을 점검해보세요"},{id:"sc4",reason:"DB 부하를 줄이는 캐시 전략도 중요합니다"}],
+      interviewQs: [
+        "JPA의 N+1 문제가 무엇이고, 왜 발생하며, 어떻게 해결하나요?",
+        "Fetch Join과 @BatchSize의 차이점과 각각 어떤 상황에 적합한지 설명해주세요.",
+        "프로덕션에서 느린 쿼리를 발견하고 해결한 경험이 있나요? 어떤 도구를 사용했나요?"
+      ],
+      codeChallenge: {
+        title: "N+1 문제 해결 — Fetch Join JPQL 작성",
+        prompt: "상품 목록 조회 시 카테고리, 옵션, 썸네일 연관 엔티티 때문에 N+1 쿼리가 발생합니다. Fetch Join JPQL을 작성하여 쿼리를 1~2개로 줄이세요.",
+        starterCode: "// ProductRepository.java\npublic interface ProductRepository extends JpaRepository<Product, Long> {\n\n    // 기존: N+1 발생\n    List<Product> findAll(Pageable pageable);\n\n    // TODO: Fetch Join으로 N+1 해결\n    // @Query(\"...\")\n    // List<Product> findAllWithDetails(Pageable pageable);\n}\n\n// Product.java\n@Entity\npublic class Product {\n    @Id private Long id;\n    private String name;\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    private Category category;\n\n    @OneToMany(mappedBy = \"product\", fetch = FetchType.LAZY)\n    private List<ProductOption> options;\n}",
+        hint: "JOIN FETCH로 @ManyToOne 연관을 한 번에 가져오세요. @OneToMany 컬렉션은 @BatchSize 또는 @EntityGraph가 더 안전합니다 (페이징 주의)."
+      }
     }
   },
   {
@@ -1064,7 +1196,7 @@ export const SCENARIOS = [
             ]}
           ]
         },
-        freeFirst: "0원에 물건을 받은 고객에게 **차액을 청구**하는 것과 **그냥 보내주는 것**, 비즈니스 관점에서 어떤 게 더 나은 선택인가요?",
+        freeFirst: "0원 결제 고객 127명에게 보낼 **안내 메시지**를 작성해보세요. 사과 + 상황 설명 + 처리 방안을 포함해야 하고, 고객이 화나지 않을 톤이어야 합니다.",
         slack: { name: "CS팀 이수진", time: "10:48", body: "0원 결제 고객들한테 연락 가야 하는데, **'축하합니다 0원에 당첨!'이라고 보낼 순 없잖아요.** 어떤 톤으로 안내할지 빨리 정해주세요. 벌써 문의 들어오기 시작했어요." },
         timer: 25,
         q: "0원 결제 건을 어떻게 처리하시겠습니까?",
@@ -1140,7 +1272,18 @@ export const SCENARIOS = [
         "Feature Flag로 할인 로직을 분리해서, 배포와 기능 활성화를 독립시킬 수 있는지 검토하세요."
       ],
       pl: "물류 프로젝트 Docker 배포에 카나리 전략 적용 어필.",
-      nextRec: [{id:"sc10",reason:"배포 후 문제를 빠르게 감지하려면 모니터링이 필수입니다"},{id:"sc1",reason:"배포 실패가 장애로 이어지는 시나리오를 경험해보세요"}]
+      nextRec: [{id:"sc10",reason:"배포 후 문제를 빠르게 감지하려면 모니터링이 필수입니다"},{id:"sc1",reason:"배포 실패가 장애로 이어지는 시나리오를 경험해보세요"}],
+      interviewQs: [
+        "프로덕션에 배포한 직후 심각한 버그를 발견하면 가장 먼저 무엇을 하시겠습니까?",
+        "카나리 배포와 Feature Flag의 차이점, 그리고 각각 어떤 상황에 적합한지 설명해주세요.",
+        "배포 후 발생한 금전적 피해(예: 0원 결제)를 기술적으로 수습한 경험이나 계획을 말해주세요."
+      ],
+      codeChallenge: {
+        title: "카나리 배포 설정 작성",
+        prompt: "Kubernetes에서 카나리 배포를 설정하여 새 버전을 5% 트래픽에만 먼저 배포하고, 에러율이 5%를 넘으면 자동 롤백되도록 설정하세요.",
+        starterCode: "# canary-deploy.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: discount-service-canary\nspec:\n  replicas: 1  # 전체 20대 중 1대 = 5%\n  selector:\n    matchLabels:\n      app: discount-service\n      track: canary\n  template:\n    spec:\n      containers:\n      - name: app\n        image: discount-service:v2.3.2\n---\n# TODO: 자동 롤백 조건 설정\n# 1. Prometheus 메트릭 기반 에러율 모니터링\n# 2. 에러율 > 5% 시 자동 롤백 트리거\n# 3. 정상 시 점진적 트래픽 증가 (5% -> 25% -> 50% -> 100%)",
+        hint: "Argo Rollouts의 AnalysisTemplate이나 Flagger를 활용하면 메트릭 기반 자동 롤백이 가능합니다."
+      }
     }
   },
   {
@@ -1268,11 +1411,11 @@ export const SCENARIOS = [
         timer: 30,
         q: "장바구니 저장 전략을 어떻게 개선하시겠습니까?",
         ch: [
-          { id: "A", text: "DB를 원본, Redis를 캐시로 (Write-Through)", desc: "장바구니 변경 시 DB 저장 후 Redis 갱신. 장애 시 DB fallback.", g: "best", nx: "end",
+          { id: "A", text: "DB를 원본, Redis를 캐시로 (Write-Through)", desc: "장바구니 변경 시 DB 저장 후 Redis 갱신. 장애 시 DB fallback.", g: "best", nx: "s7a",
             impact: { "안전성": "Redis 장애에도 무손실", "성능": "읽기 동일, 쓰기 +5ms", "복잡도": "중간" } },
-          { id: "B", text: "Redis AOF everysec 활성화", desc: "1초마다 디스크 기록. 최대 1초 데이터 유실.", g: "ok", nx: "end",
+          { id: "B", text: "Redis AOF everysec 활성화", desc: "1초마다 디스크 기록. 최대 1초 데이터 유실.", g: "ok", nx: "s7a",
             impact: { "안전성": "최대 1초 유실", "성능": "변화 없음", "복잡도": "낮음" } },
-          { id: "C", text: "클라이언트 로컬스토리지에 백업", desc: "브라우저에 장바구니 사본 저장", g: "ok", nx: "end",
+          { id: "C", text: "클라이언트 로컬스토리지에 백업", desc: "브라우저에 장바구니 사본 저장", g: "ok", nx: "s7a",
             impact: { "안전성": "디바이스 한정", "성능": "변화 없음", "복잡도": "낮음" } }
         ],
         fb: {
@@ -1284,6 +1427,44 @@ export const SCENARIOS = [
           { option: "DB+캐시", time: "1~2주", risk: "없음", dataLoss: "없음", note: "현업 표준" },
           { option: "AOF 활성화", time: "1일", risk: "낮음", dataLoss: "최대 1초", note: "부분 개선" },
           { option: "로컬스토리지", time: "2~3일", risk: "없음", dataLoss: "디바이스 한정", note: "보조 수단" }
+        ]
+      },
+      s7a: {
+        time: "10:30", title: "재발 방지 — Redis Failover 대비", phase: "postmortem",
+        nar: ["장바구니 데이터 복구와 아키텍처 개선 방향이 정해졌습니다. 이제 포스트모템에서 **Redis 장애가 다시 일어나도 서비스가 견딜 수 있는 구조**를 제안해야 합니다.", "인프라팀: '슬롯 마이그레이션은 정기적으로 합니다. 다음에도 같은 일이 생기면?'"],
+        clues: {
+          prompt: "Redis Failover 시 서비스 영향을 최소화하는 방법을 비교합니다.",
+          options: [
+            { id: "circuit", label: "📋 Redis 장애 감지", content: [
+              { t: "", lv: "info", m: "Redis 연결 실패 시 서킷 브레이커 → DB fallback 자동 전환" },
+              { t: "", lv: "warn", m: "fallback 시 DB 부하 증가 — 커넥션 풀 여유 필요" }
+            ]},
+            { id: "sync", label: "📊 DB↔Redis 동기화", metrics: [
+              { l: "Write-Through 지연", v: "<5ms", s: "ok", u: "DB 먼저 Redis 갱신" },
+              { l: "Redis 복구 후", v: "자동 재구축", s: "ok", u: "DB 데이터로 워밍업" }
+            ]},
+            { id: "test", label: "🛠 카오스 테스트", content: [
+              { t: "", lv: "info", m: "Redis 노드 강제 종료 → 서비스 정상 동작 확인" },
+              { t: "", lv: "warn", m: "분기 1회 Redis 장애 드릴 실시 권장" }
+            ]}
+          ]
+        },
+        freeFirst: "Redis가 죽어도 장바구니 서비스가 **정상적으로 동작하려면** 어떤 계층을 추가해야 할까요? Write-Through만으로 충분한가요?",
+        slack: { name: "인프라팀 정시니어", time: "10:25", body: "Write-Through 좋습니다. 한 가지 더 — **Redis 연결이 끊겼을 때 앱이 어떻게 반응하는지** 정의해주세요. 지금은 Redis timeout이면 500 에러가 그대로 나갑니다. DB fallback이 자동으로 되게 해야 합니다." },
+        q: "Redis 장애 시에도 서비스가 정상 동작하려면?",
+        ch: [
+          { id: "A", text: "Redis 서킷 브레이커 + DB fallback + 복구 후 자동 워밍업 + 분기별 장애 드릴", desc: "Redis 장애 감지 → 자동 DB 전환, 복구 후 캐시 재구축, 정기 검증", g: "best", nx: "end",
+            impact: { "장애 시 서비스": "정상 (DB fallback)", "복구 후": "자동 워밍업", "검증": "분기별 드릴" } },
+          { id: "B", text: "Redis Sentinel/Cluster HA만 강화", desc: "Redis 자체 고가용성으로 장애 방지", g: "ok", nx: "end",
+            impact: { "장애 시 서비스": "잠시 중단 (failover 대기)", "복구 후": "자동", "검증": "없음" } }
+        ],
+        fb: {
+          A: { t: "🟢 방어적 설계!", b: "**Redis가 죽어도 서비스는 살아있는 구조**. 서킷 브레이커로 Redis 장애 감지 → DB fallback. 복구 후 DB 데이터로 캐시 자동 재구축. 분기별 드릴로 실제 동작 검증.", cost: "DB fallback 시 **응답시간 증가**(5ms → 50ms)와 **DB 부하 증가**를 커넥션 풀로 대비해야 합니다.", r: "대형 커머스는 Redis 의존 서비스에 반드시 DB fallback을 구현합니다." },
+          B: { t: "🟡 불완전", b: "Sentinel/Cluster가 failover하는 **수초~수십 초 동안은 서비스 중단**. 슬롯 마이그레이션 같은 계획된 작업에서도 키 유실 가능.", cost: "Redis HA만 믿으면 **이번과 같은 사고가 반복**될 수 있습니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "서킷+fallback+워밍업+드릴", time: "1주", risk: "매우 낮음", dataLoss: "없음", note: "Redis 죽어도 서비스 유지" },
+          { option: "HA만 강화", time: "수일", risk: "failover 중 중단", dataLoss: "가능", note: "부분적 해결" }
         ]
       },
       end: { type: "end" }
@@ -1301,7 +1482,18 @@ export const SCENARIOS = [
         "Redis Cluster 운영 시 슬롯 마이그레이션 절차와 키 백업 정책을 확인하세요."
       ],
       pl: "프로젝트에서 Redis 의존 데이터를 DB+캐시 이중화로 전환하면 안정성 설계 역량 어필.",
-      nextRec: [{id:"sc4",reason:"Redis 장애가 서비스 전체에 미치는 영향을 경험해보세요"},{id:"sc9",reason:"서비스 간 데이터 정합성 문제도 함께 익혀보세요"}]
+      nextRec: [{id:"sc4",reason:"Redis 장애가 서비스 전체에 미치는 영향을 경험해보세요"},{id:"sc9",reason:"서비스 간 데이터 정합성 문제도 함께 익혀보세요"}],
+      interviewQs: [
+        "Redis에 중요 데이터(장바구니 등)를 저장할 때 고려해야 할 영속성 전략은 무엇인가요?",
+        "Write-Through, Write-Behind, Cache-Aside 패턴의 차이점과 장바구니에 적합한 전략은?",
+        "Redis Cluster 장애 시 데이터 유실을 최소화하는 방법을 설명해주세요."
+      ],
+      codeChallenge: {
+        title: "Write-Through 장바구니 저장 구현",
+        prompt: "장바구니 변경 시 DB에 먼저 저장한 후 Redis를 갱신하는 Write-Through 패턴을 구현하세요. Redis 장애 시에도 DB에서 조회할 수 있어야 합니다.",
+        starterCode: "@Service\npublic class CartService {\n\n    private final CartRepository cartRepo;  // DB\n    private final RedisTemplate<String, String> redis;\n\n    public Cart addItem(Long userId, CartItem item) {\n        // 현재: Redis에만 저장 (장애 시 유실)\n        String key = \"cart:\" + userId;\n        // TODO: Write-Through 패턴 구현\n        // 1. DB에 먼저 저장 (원본)\n        // 2. Redis에 캐시 갱신\n        // 3. Redis 장애 시에도 DB fallback\n        redis.opsForHash().put(key, item.getProductId(), serialize(item));\n        return getCart(userId);\n    }\n}",
+        hint: "DB 저장을 먼저 하고, Redis 갱신은 try-catch로 감싸세요. Redis 실패 시 다음 조회에서 DB 데이터를 읽어 캐시를 재구축합니다."
+      }
     }
   },
   {
@@ -1455,7 +1647,7 @@ export const SCENARIOS = [
             ]}
           ]
         },
-        freeFirst: "이번 사고에서 **가장 근본적인 설계 결함**은 무엇이었고, 어떤 아키텍처가 이를 방지했을까요?",
+        freeFirst: "정산 보정 후 입점 셀러 150곳에 보낼 **공지 메시지**를 작성해보세요. 불일치 원인, 보정 완료 사실, 재발 방지 대책을 포함해야 하며, 셀러 신뢰를 유지하는 톤이어야 합니다.",
         slack: { name: "재무팀 김팀장", time: "익일 09:30", body: "정산 정상 처리 확인했습니다. 수고하셨어요. 하지만 **다시는 이런 일 없도록** 시스템적 방지 장치를 마련해주세요. 셀러 신뢰가 생명입니다." },
         q: "정산 시스템을 어떻게 개선하시겠습니까?",
         ch: [
@@ -1484,7 +1676,18 @@ export const SCENARIOS = [
         "환불/취소 API가 정산 서비스에 이벤트를 발행하는지, 아니면 동기 호출만 하는지 확인하세요."
       ],
       pl: "정산 시스템에 이중 원장과 일일 정합성 체크를 도입하면 금융/이커머스 핵심 역량 어필.",
-      nextRec: [{id:"sc2",reason:"결제 멱등성도 정산 정합성과 직결됩니다"},{id:"sc9",reason:"MSA에서 서비스 간 정합성을 SAGA로 보장하는 법을 익혀보세요"}]
+      nextRec: [{id:"sc2",reason:"결제 멱등성도 정산 정합성과 직결됩니다"},{id:"sc9",reason:"MSA에서 서비스 간 정합성을 SAGA로 보장하는 법을 익혀보세요"}],
+      interviewQs: [
+        "이커머스 정산 시스템에서 데이터 정합성을 보장하는 방법을 설명해주세요.",
+        "이벤트 소싱과 이중 원장(Double-Entry Ledger) 패턴은 각각 무엇이고, 정산에 어떻게 도움이 되나요?",
+        "정산 금액 불일치가 발생했을 때 SQL 직접 수정 대신 이벤트 replay를 권장하는 이유는?"
+      ],
+      codeChallenge: {
+        title: "일일 정산 정합성 검증 쿼리 작성",
+        prompt: "주문 매출 합계와 셀러 정산 합계를 비교하여 불일치를 감지하는 일일 정합성 검증 쿼리를 작성하세요. 환불, 쿠폰 할인, 수수료를 모두 고려해야 합니다.",
+        starterCode: "-- 일일 정산 정합성 검증 쿼리\n-- TODO: 주문 매출 합계 vs 정산 합계 비교\n\n-- 1. 주문 매출 합계 (환불 차감)\nSELECT\n    -- TODO: 주문 금액 - 환불 금액 - 쿠폰 할인\n    NULL AS order_total\nFROM orders o\nWHERE o.created_at >= CURRENT_DATE - INTERVAL '1 day';\n\n-- 2. 셀러 정산 합계\nSELECT\n    -- TODO: 정산 금액 합계\n    NULL AS settlement_total\nFROM settlements s\nWHERE s.settlement_date = CURRENT_DATE;\n\n-- 3. 차이 검출\n-- TODO: 두 합계의 차이가 0이 아니면 알림",
+        hint: "LEFT JOIN으로 환불/쿠폰 테이블을 결합하고, COALESCE로 NULL 처리하세요. 차이 금액의 절대값이 임계치를 넘으면 알림을 보냅니다."
+      }
     }
   },
   {
@@ -1677,7 +1880,18 @@ export const SCENARIOS = [
         "보상 실패 건을 담는 **Dead Letter Queue(DLQ)**를 설계하고, DLQ 건수가 0이 아닐 때 Slack 알림을 보내보세요."
       ],
       pl: "물류 프로젝트 주문+배송 생성에 SAGA 패턴 + 보상 트랜잭션 적용 어필.",
-      nextRec: [{id:"sc1",reason:"서비스 간 통신 장애인 Cascading Failure를 경험해보세요"},{id:"sc2",reason:"분산 환경에서 멱등성 보장도 중요합니다"}]
+      nextRec: [{id:"sc1",reason:"서비스 간 통신 장애인 Cascading Failure를 경험해보세요"},{id:"sc2",reason:"분산 환경에서 멱등성 보장도 중요합니다"}],
+      interviewQs: [
+        "SAGA 패턴이란 무엇이고, 2PC와 비교했을 때 MSA에서 더 적합한 이유는?",
+        "Orchestration과 Choreography 방식의 SAGA를 비교하고, 각각 어떤 상황에 적합한지 설명해주세요.",
+        "보상 트랜잭션이 실패하면 어떻게 처리해야 하나요? DLQ와 멱등키의 역할은?"
+      ],
+      codeChallenge: {
+        title: "SAGA Orchestrator 보상 트랜잭션 구현",
+        prompt: "결제는 성공했지만 주문 생성이 실패했을 때, 결제를 자동으로 취소하는 보상 트랜잭션을 구현하세요. 재시도, 멱등키, DLQ를 고려해야 합니다.",
+        starterCode: "@Service\npublic class OrderSagaOrchestrator {\n\n    private final PaymentClient paymentClient;\n    private final OrderRepository orderRepo;\n\n    public void handleOrderFailure(String paymentId, String orderId) {\n        // TODO: 보상 트랜잭션 구현\n        // 1. 결제 취소 API 호출 (멱등키 포함)\n        // 2. 실패 시 재시도 (최대 3회)\n        // 3. 재시도 실패 시 DLQ에 저장\n        // 4. 고객에게 알림 발송\n        paymentClient.cancel(paymentId);\n    }\n}",
+        hint: "멱등키로 중복 취소를 방지하고, @Retryable로 재시도를 구현하세요. 최종 실패 시 DLQ 테이블에 INSERT하고 알림을 보냅니다."
+      }
     }
   },
   {
@@ -1803,11 +2017,11 @@ export const SCENARIOS = [
         timer: 30,
         q: "핵심 모니터링 지표(Golden Signals)?",
         ch: [
-          { id: "A", text: "4대 골든 시그널: Latency, Traffic, Errors, Saturation", desc: "Google SRE 정의 4대 핵심 지표", g: "best", nx: "end",
+          { id: "A", text: "4대 골든 시그널: Latency, Traffic, Errors, Saturation", desc: "Google SRE 정의 4대 핵심 지표", g: "best", nx: "s10a",
             impact: { "장애 감지율": "95%+", "커버리지": "대부분의 장애", "출처": "Google SRE" } },
-          { id: "B", text: "CPU, 메모리, 디스크", desc: "인프라 리소스", g: "ok", nx: "end",
+          { id: "B", text: "CPU, 메모리, 디스크", desc: "인프라 리소스", g: "ok", nx: "s10a",
             impact: { "장애 감지율": "60%", "커버리지": "인프라만", "출처": "전통적 모니터링" } },
-          { id: "C", text: "주문 수, 매출, 전환율", desc: "비즈니스 지표", g: "ok", nx: "end",
+          { id: "C", text: "주문 수, 매출, 전환율", desc: "비즈니스 지표", g: "ok", nx: "s10a",
             impact: { "장애 감지율": "40%", "커버리지": "비즈니스만", "출처": "BI 팀" } }
         ],
         fb: {
@@ -1819,6 +2033,45 @@ export const SCENARIOS = [
           { option: "골든 시그널 4종", time: "구축 1~2일", risk: "없음", dataLoss: "없음", note: "장애 95% 감지" },
           { option: "인프라 메트릭만", time: "수시간", risk: "앱 장애 놓침", dataLoss: "없음", note: "부분적" },
           { option: "비즈니스 지표만", time: "수시간", risk: "기술 장애 놓침", dataLoss: "없음", note: "보조 수단" }
+        ]
+      },
+      s10a: {
+        time: "10:00", title: "알림 설계 + Runbook 작성", phase: "postmortem",
+        nar: ["골든 시그널 기반 모니터링을 구축했습니다. 이제 **알림이 오면 누가, 무엇을, 어떤 순서로** 해야 하는지 정의해야 합니다.", "CTO: '대시보드는 만들었는데, 새벽에 알림 오면 어떻게 하죠?'"],
+        clues: {
+          prompt: "알림 전략과 Runbook의 필요성을 확인합니다.",
+          options: [
+            { id: "noise", label: "📋 알림 노이즈 사례", content: [
+              { t: "", lv: "warn", m: "CPU 알림 100건/일 → 팀이 알림을 무시하기 시작 → '알림 피로'" },
+              { t: "", lv: "info", m: "SLO 기반 알림: '에러 버짓 소진률 > 50%/시간' → 진짜 중요한 것만" }
+            ]},
+            { id: "oncall", label: "📊 온콜 현황", metrics: [
+              { l: "온콜 로테이션", v: "미설정", s: "danger", u: "새벽 장애 대응자 없음" },
+              { l: "Runbook", v: "없음", s: "danger", u: "대응 절차 미정의" },
+              { l: "에스컬레이션", v: "미정의", s: "warning", u: "누구에게 올릴지 불명확" }
+            ]},
+            { id: "run", label: "🛠 Runbook 예시", content: [
+              { t: "", lv: "info", m: "알림: order-service p99 > 3s → 1) Grafana 확인 2) 로그 확인 3) 재시작 or 롤백" },
+              { t: "", lv: "info", m: "알림: 에러율 > 5% → 1) 최근 배포 확인 2) 롤백 판단 3) 장애 선언" }
+            ]}
+          ]
+        },
+        freeFirst: "알림이 너무 많으면 무시하게 되고(알림 피로), 너무 적으면 놓칩니다. **정말 중요한 알림만** 보내려면 어떤 기준을 세워야 할까요?",
+        slack: { name: "팀리드 박과장", time: "09:55", body: "대시보드 좋습니다. 근데 **새벽에 알림 오면 누가 받죠?** 온콜 로테이션이랑 Runbook이 없으면 알림이 와도 대응을 못 합니다. 이번처럼요." },
+        q: "알림 체계와 운영 프로세스를 어떻게 설계하시겠습니까?",
+        ch: [
+          { id: "A", text: "SLO 기반 알림 + 온콜 로테이션 + Runbook + 에스컬레이션", desc: "에러 버짓 소진률 기반 알림, 주간 온콜 교대, 장애별 대응 절차서, 30분 미대응 시 에스컬레이션", g: "best", nx: "end",
+            impact: { "알림 품질": "노이즈 최소화", "새벽 대응": "온콜자 즉시 확인", "대응 시간": "Runbook으로 단축" } },
+          { id: "B", text: "임계치 알림만 설정 (CPU>90%, 에러율>10%)", desc: "단순 수치 기반 알림", g: "ok", nx: "end",
+            impact: { "알림 품질": "노이즈 높음", "새벽 대응": "누가 받을지 불명확", "대응 시간": "사람마다 다름" } }
+        ],
+        fb: {
+          A: { t: "🟢 SRE 조직 수준!", b: "**SLO 기반 알림**은 '고객 영향이 있을 때만' 알리므로 알림 피로를 줄입니다. **온콜 + Runbook + 에스컬레이션**은 '누가, 무엇을, 언제까지'를 명확히 합니다.", cost: "Runbook 작성과 온콜 문화 정착에 **팀 단위 합의**가 필요합니다.", r: "Google, Netflix, 토스 등은 SLO/에러 버짓 기반 알림과 온콜 로테이션을 운영합니다." },
+          B: { t: "🟡 시작은 되지만", b: "단순 임계치 알림은 **노이즈가 많아** 팀이 곧 무시하게 됩니다. 새벽 알림을 누가 받을지도 정해져 있지 않습니다.", cost: "알림 피로로 **정작 중요한 알림을 놓치는** 이번과 같은 상황이 반복됩니다.", r: "" }
+        },
+        tradeoff: [
+          { option: "SLO+온콜+Runbook", time: "1~2주", risk: "매우 낮음", dataLoss: "없음", note: "조직적 대응" },
+          { option: "임계치 알림만", time: "수시간", risk: "알림 피로", dataLoss: "없음", note: "대응자 불명확" }
         ]
       },
       end: { type: "end" }
@@ -1837,7 +2090,18 @@ export const SCENARIOS = [
         "Grafana에서 응답시간, 에러율 대시보드를 하나 만들어보세요."
       ],
       pl: "물류 프로젝트 Zipkin에 Prometheus+Grafana 추가하면 Observability 어필.",
-      nextRec: [{id:"sc6",reason:"모니터링 다음은 안전한 배포 전략입니다"},{id:"sc1",reason:"모니터링이 있었다면 이 장애를 빠르게 잡을 수 있었습니다"}]
+      nextRec: [{id:"sc6",reason:"모니터링 다음은 안전한 배포 전략입니다"},{id:"sc1",reason:"모니터링이 있었다면 이 장애를 빠르게 잡을 수 있었습니다"}],
+      interviewQs: [
+        "Google SRE의 4대 골든 시그널(Latency, Traffic, Errors, Saturation)을 각각 설명하고, 왜 중요한지 말해주세요.",
+        "Spring Boot 애플리케이션에 모니터링을 구축하는 전체 스택(Actuator → Prometheus → Grafana → AlertManager)을 설명해주세요.",
+        "'서버가 UP이지만 장애인 상황'을 어떻게 감지할 수 있나요?"
+      ],
+      codeChallenge: {
+        title: "Prometheus AlertManager 알림 규칙 작성",
+        prompt: "주문 서비스의 에러율이 5%를 넘거나 p99 응답시간이 3초를 넘으면 Slack으로 알림이 가도록 Prometheus AlertManager 규칙을 작성하세요.",
+        starterCode: "# prometheus-alerts.yml\ngroups:\n- name: order-service-alerts\n  rules:\n  - alert: HighErrorRate\n    # TODO: 에러율 > 5% 조건\n    expr: |\n      # http_server_requests_seconds_count 메트릭 활용\n    for: 1m\n    labels:\n      severity: critical\n    annotations:\n      summary: \"주문 서비스 에러율 {{ $value }}%\"\n\n  - alert: HighLatency\n    # TODO: p99 응답시간 > 3초 조건\n    expr: |\n      # http_server_requests_seconds 히스토그램 메트릭 활용\n    for: 2m\n    labels:\n      severity: warning\n    annotations:\n      summary: \"주문 서비스 p99 {{ $value }}초\"",
+        hint: "rate()와 histogram_quantile() 함수를 활용하세요. status=~'5..'로 에러 응답만 필터링합니다."
+      }
     }
   }
 ];

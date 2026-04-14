@@ -1,10 +1,35 @@
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { SCENARIOS } from '../data/scenarios';
 import { useCompleted } from './CompletedContext';
 
+function getReviewQuizzes(completed) {
+  const now = Date.now();
+  const DAY = 86400000;
+  const intervals = [3 * DAY, 7 * DAY, 14 * DAY, 30 * DAY];
+  const quizzes = [];
+
+  for (const [scId, data] of Object.entries(completed)) {
+    const sc = SCENARIOS.find(s => s.id === scId);
+    if (!sc?.pm?.qa) continue;
+    const completedDate = new Date(data.date).getTime();
+    if (isNaN(completedDate)) continue;
+    const elapsed = now - completedDate;
+    const isDue = intervals.some(iv => elapsed >= iv - DAY / 2 && elapsed <= iv + DAY * 2);
+    const isOld = elapsed > 2 * DAY;
+    if (isDue || isOld) {
+      sc.pm.qa.forEach(qa => quizzes.push({ scId, icon: sc.icon, title: sc.title, q: qa.q, a: qa.a }));
+    }
+  }
+  const shuffled = quizzes.sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 2);
+}
+
 export default function Home() {
   const { completed } = useCompleted();
   const totalDone = Object.keys(completed).length;
+  const reviewQuizzes = useMemo(() => getReviewQuizzes(completed), [completed]);
+  const [revealed, setRevealed] = useState({});
 
   return (
     <main className="page">
@@ -33,6 +58,34 @@ export default function Home() {
               </div>
             </div>
           </Link>
+        )}
+
+        {reviewQuizzes.length > 0 && (
+          <section style={{ marginBottom: 20 }} aria-label="복습 퀴즈">
+            <div className="tag" style={{ color: 'var(--yellow)', marginBottom: 10 }}>🔄 오늘의 복습</div>
+            {reviewQuizzes.map((quiz, i) => (
+              <div key={i} className="card card--sm" style={{ marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <span>{quiz.icon}</span>
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)' }}>{quiz.title}</span>
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--blue)', marginBottom: 8 }}>Q. {quiz.q}</div>
+                {revealed[i] ? (
+                  <div style={{ fontSize: 13, color: 'var(--sec)', lineHeight: 1.7, padding: '8px 12px', background: 'rgba(34,197,94,0.06)', borderRadius: 6, border: '1px solid rgba(34,197,94,0.15)' }}>
+                    A. {quiz.a}
+                  </div>
+                ) : (
+                  <button
+                    className="btn btn--ghost"
+                    style={{ fontSize: 12 }}
+                    onClick={() => setRevealed(prev => ({ ...prev, [i]: true }))}
+                  >
+                    머릿속으로 답한 후 클릭하세요 →
+                  </button>
+                )}
+              </div>
+            ))}
+          </section>
         )}
 
         <nav aria-label="시나리오 목록">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { SCENARIOS } from '../data/scenarios';
 import { GC } from '../utils/constants';
@@ -9,6 +9,19 @@ export default function PostMortem({ sc, state, onRestart }) {
   const { completed, saveCompleted } = useCompleted();
   const [copied, setCopied] = useState(false);
   const pm = sc.pm;
+
+  const [ivOpen, setIvOpen] = useState(false);
+  const [ivMsgs, setIvMsgs] = useState([]);
+  const [ivInput, setIvInput] = useState('');
+  const [ivLoading, setIvLoading] = useState(false);
+  const [ivQIdx, setIvQIdx] = useState(0);
+  const ivEndRef = useRef(null);
+
+  const [ccOpen, setCcOpen] = useState(false);
+  const [ccCode, setCcCode] = useState('');
+  const [ccMsgs, setCcMsgs] = useState([]);
+  const [ccLoading, setCcLoading] = useState(false);
+  const ccEndRef = useRef(null);
   const maxS = state.hist.length * 20;
   const pct = maxS ? Math.round((state.score / maxS) * 100) : 0;
 
@@ -24,6 +37,80 @@ export default function PostMortem({ sc, state, onRestart }) {
       saveCompleted({ ...completed, [sc.id]: { score: state.score, maxS, pct, cat: sc.cat, date: new Date().toLocaleDateString() } });
     }
   }, [sc.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => { ivEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [ivMsgs]);
+  useEffect(() => { ccEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [ccMsgs]);
+
+  const startInterview = () => {
+    const q = pm.interviewQs?.[ivQIdx];
+    if (!q) return;
+    setIvOpen(true);
+    setIvMsgs([{ role: 'assistant', content: `면접 질문입니다.\n\n"${q}"` }]);
+  };
+
+  const nextInterviewQ = () => {
+    const next = ivQIdx + 1;
+    if (next >= (pm.interviewQs?.length || 0)) return;
+    setIvQIdx(next);
+    setIvMsgs([{ role: 'assistant', content: `다음 질문입니다.\n\n"${pm.interviewQs[next]}"` }]);
+    setIvInput('');
+  };
+
+  const sendIvAnswer = async () => {
+    if (!ivInput.trim() || ivLoading) return;
+    const userMsg = { role: 'user', content: ivInput };
+    const newMsgs = [...ivMsgs, userMsg];
+    setIvMsgs(newMsgs);
+    setIvInput('');
+    setIvLoading(true);
+    try {
+      const history = newMsgs.map(m => `${m.role === 'user' ? '지원자' : '면접관'}: ${m.content}`).join('\n');
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: `당신은 이커머스 백엔드 시니어 개발자 면접관입니다.\n시나리오: ${sc.title}\n핵심 개념: ${sc.tags.join(', ')}\n근본 원인: ${pm.rc}\n\n대화 기록:\n${history}\n\n면접관 규칙:\n1. 지원자 답변에서 좋은 점을 먼저 짚어주세요.\n2. 부족하거나 틀린 부분이 있다면 구체적으로 피드백하세요.\n3. STAR 기법(Situation-Task-Action-Result)으로 답변 구조화를 유도하세요.\n4. 실제 면접에서 합격/불합격 수준인지 솔직히 평가하세요.\n5. 3~4문장으로 답하세요. 마크다운 사용하지 마세요.\n6. 한국어로 답변하세요.` }]
+        })
+      });
+      if (!resp.ok) throw new Error(`서버 오류 (${resp.status})`);
+      const data = await resp.json();
+      const aiText = data.content?.map(c => c.text || '').join('') || '피드백을 생성하지 못했습니다.';
+      setIvMsgs(prev => [...prev, { role: 'assistant', content: aiText }]);
+    } catch (e) {
+      setIvMsgs(prev => [...prev, { role: 'assistant', content: `AI 면접관 연결 실패: ${e.message}` }]);
+    }
+    setIvLoading(false);
+  };
+
+  const startCode = () => {
+    setCcOpen(true);
+    setCcCode(pm.codeChallenge?.starterCode || '');
+    setCcMsgs([]);
+  };
+
+  const submitCode = async () => {
+    if (!ccCode.trim() || ccLoading) return;
+    const userMsg = { role: 'user', content: ccCode };
+    setCcMsgs(prev => [...prev, userMsg]);
+    setCcLoading(true);
+    try {
+      const ch = pm.codeChallenge;
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: `당신은 이커머스 백엔드 시니어 개발자 코드 리뷰어입니다.\n시나리오: ${sc.title}\n과제: ${ch.prompt}\n힌트: ${ch.hint}\n\n지원자가 제출한 코드:\n${ccCode}\n\n리뷰 규칙:\n1. 코드에서 잘한 점을 먼저 짚어주세요.\n2. 버그, 엣지 케이스, 성능 이슈가 있다면 구체적으로 짚어주세요.\n3. 개선 방향을 제시하되, 정답 코드를 직접 작성하지는 마세요.\n4. 실제 PR 리뷰 톤으로 3~5문장 작성하세요.\n5. 한국어로 답변하세요. 마크다운 사용하지 마세요.` }]
+        })
+      });
+      if (!resp.ok) throw new Error(`서버 오류 (${resp.status})`);
+      const data = await resp.json();
+      const aiText = data.content?.map(c => c.text || '').join('') || '리뷰를 생성하지 못했습니다.';
+      setCcMsgs(prev => [...prev, { role: 'assistant', content: aiText }]);
+    } catch (e) {
+      setCcMsgs(prev => [...prev, { role: 'assistant', content: `AI 리뷰어 연결 실패: ${e.message}` }]);
+    }
+    setCcLoading(false);
+  };
 
   return (
     <main className="page">
@@ -132,6 +219,89 @@ export default function PostMortem({ sc, state, onRestart }) {
                 </Link>
               );
             })}
+          </section>
+        )}
+
+        {/* ── Interview Practice ── */}
+        {pm.interviewQs?.length > 0 && (
+          <section className="card" style={{ marginBottom: 12, padding: '16px 20px' }} aria-label="면접 연습">
+            <div className="tag" style={{ color: 'var(--purple, #a855f7)', marginBottom: 8 }}>🎤 면접 답변 연습</div>
+            <p style={{ fontSize: 13, color: 'var(--sec)', marginBottom: 12, lineHeight: 1.6 }}>
+              이 시나리오에서 배운 내용을 면접에서 어떻게 말할지 연습해보세요. AI 면접관이 피드백을 드립니다.
+            </p>
+            {!ivOpen ? (
+              <button className="btn btn--primary btn--sm" onClick={startInterview}>면접 연습 시작</button>
+            ) : (
+              <>
+                <div className="chat-messages" role="log" aria-label="면접 대화" style={{ maxHeight: 360, overflowY: 'auto', marginBottom: 10 }}>
+                  {ivMsgs.map((msg, i) => (
+                    <div key={i} className={`chat-bubble ${msg.role === 'user' ? 'chat-bubble--user' : 'chat-bubble--ai'}`}>
+                      {msg.role === 'assistant' && <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--purple, #a855f7)', marginBottom: 4, fontWeight: 600 }}>🎤 AI 면접관</div>}
+                      {msg.content}
+                    </div>
+                  ))}
+                  {ivLoading && <div className="chat-bubble chat-bubble--ai"><span style={{ animation: 'pulse 1s infinite' }}>면접관이 평가하는 중...</span></div>}
+                  <div ref={ivEndRef} />
+                </div>
+                <textarea
+                  className="chat-input"
+                  value={ivInput}
+                  onChange={e => setIvInput(e.target.value)}
+                  placeholder="면접 답변을 작성하세요... (STAR 기법: 상황-과제-행동-결과)"
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendIvAnswer(); } }}
+                  aria-label="면접 답변 입력"
+                />
+                <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button className="btn btn--primary btn--sm" disabled={ivLoading || !ivInput.trim()} onClick={sendIvAnswer}>답변 제출</button>
+                  {ivQIdx < (pm.interviewQs?.length || 0) - 1 && ivMsgs.length > 1 && (
+                    <button className="btn btn--ghost" onClick={nextInterviewQ}>다음 질문 →</button>
+                  )}
+                  <span style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--muted)' }}>
+                    질문 {ivQIdx + 1}/{pm.interviewQs.length}
+                  </span>
+                </div>
+              </>
+            )}
+          </section>
+        )}
+
+        {/* ── Code Challenge ── */}
+        {pm.codeChallenge && (
+          <section className="card" style={{ marginBottom: 12, padding: '16px 20px' }} aria-label="코드 챌린지">
+            <div className="tag" style={{ color: 'var(--green)', marginBottom: 8 }}>💻 코드 챌린지</div>
+            <p style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{pm.codeChallenge.title}</p>
+            <p style={{ fontSize: 13, color: 'var(--sec)', marginBottom: 8, lineHeight: 1.6 }}>{pm.codeChallenge.prompt}</p>
+            <p style={{ fontSize: 12, color: 'var(--yellow)', marginBottom: 12 }}>💡 힌트: {pm.codeChallenge.hint}</p>
+            {!ccOpen ? (
+              <button className="btn btn--primary btn--sm" onClick={startCode}>코드 작성 시작</button>
+            ) : (
+              <>
+                <textarea
+                  className="chat-input"
+                  value={ccCode}
+                  onChange={e => setCcCode(e.target.value)}
+                  style={{ fontFamily: 'var(--mono)', fontSize: 12, minHeight: 180, whiteSpace: 'pre', tabSize: 2 }}
+                  aria-label="코드 입력"
+                />
+                <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center' }}>
+                  <button className="btn btn--primary btn--sm" disabled={ccLoading || !ccCode.trim()} onClick={submitCode}>AI 코드 리뷰 요청</button>
+                  {ccLoading && <span style={{ fontSize: 12, color: 'var(--muted)', animation: 'pulse 1s infinite' }}>리뷰 중...</span>}
+                </div>
+                {ccMsgs.length > 0 && (
+                  <div className="chat-messages" role="log" aria-label="코드 리뷰" style={{ maxHeight: 300, overflowY: 'auto', marginTop: 10 }}>
+                    {ccMsgs.map((msg, i) => (
+                      msg.role === 'assistant' && (
+                        <div key={i} className="chat-bubble chat-bubble--ai">
+                          <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--green)', marginBottom: 4, fontWeight: 600 }}>💻 AI 코드 리뷰어</div>
+                          {msg.content}
+                        </div>
+                      )
+                    ))}
+                    <div ref={ccEndRef} />
+                  </div>
+                )}
+              </>
+            )}
           </section>
         )}
 
