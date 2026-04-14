@@ -1,0 +1,176 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+KR:wght@400;700;900&display=swap');
+
+:root {
+  --bg: #080b12;
+  --card: #111827;
+  --border: #1e293b;
+  --text: #e2e8f0;
+  --sec: #8896b3;
+  --muted: #4a5568;
+  --blue: #3b82f6;
+  --blue-dark: #1e3a6e;
+  --red: #ef4444;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Noto Sans KR', sans-serif;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse  { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+
+/* ── Layout ── */
+.page { min-height: 100vh; background: var(--bg); }
+.container { max-width: 700px; margin: 0 auto; padding: 40px 20px 80px; animation: fadeIn .5s ease; }
+.container--wide { max-width: 760px; }
+
+/* ── Card ── */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; }
+.card--sm { padding: 14px 18px; border-radius: 8px; }
+
+/* ── Terminal ── */
+.terminal { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; overflow: hidden; }
+.terminal__bar { background: #161b22; padding: 6px 10px; display: flex; gap: 4px; border-bottom: 1px solid #1e293b; align-items: center; }
+.terminal__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.terminal__body { padding: 12px; font-family: var(--mono); font-size: 12px; line-height: 1.8; }
+
+/* ── Metrics Grid ── */
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.metric-card { background: var(--card); border: 1px solid var(--border); border-radius: 7px; padding: 12px 14px; }
+.metric-card__label { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+.metric-card__value { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+.metric-card__sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+/* ── Buttons ── */
+.btn { display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 7px; font-family: var(--sans); font-weight: 600; cursor: pointer; transition: opacity .15s; min-height: 44px; padding: 10px 28px; font-size: 14px; }
+.btn:hover { opacity: .85; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn--primary { background: var(--blue); color: #fff; }
+.btn--secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+.btn--ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 12px; padding: 8px 16px; min-height: 36px; }
+.btn--danger { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+.btn--sm { font-size: 12px; padding: 8px 18px; min-height: 36px; border-radius: 6px; }
+
+/* ── Slack message ── */
+.slack { background: #0d1117; border: 1px solid #1e293b; border-radius: 8px; padding: 14px 16px; animation: fadeIn .4s ease; }
+.slack__header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.slack__avatar { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+.slack__name { font-weight: 700; font-size: 13px; }
+.slack__time { font-size: 11px; color: var(--muted); }
+.slack__channel { margin-left: auto; font-size: 10px; color: var(--muted); background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 3px; font-family: var(--mono); }
+.slack__body { font-size: 13px; color: var(--sec); line-height: 1.7; padding-left: 36px; }
+
+/* ── Tag / Badge ── */
+.tag { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 4px; display: inline-block; letter-spacing: .5px; }
+
+/* ── Tradeoff Table ── */
+.tradeoff { background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; animation: fadeIn .4s ease; }
+.tradeoff__header { font-family: var(--mono); font-size: 11px; color: var(--blue); padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.tradeoff__scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tradeoff table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; }
+.tradeoff th { padding: 8px 12px; text-align: left; color: var(--muted); font-weight: 600; font-size: 11px; white-space: nowrap; }
+.tradeoff td { padding: 8px 12px; color: var(--sec); }
+.tradeoff tr { border-bottom: 1px solid var(--border); }
+
+/* ── Chat ── */
+.chat-area { background: rgba(59,130,246,0.04); border: 1px solid rgba(59,130,246,0.15); border-radius: 9px; padding: 16px 18px; }
+.chat-messages { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.chat-bubble { max-width: 85%; padding: 10px 14px; font-size: 13px; color: var(--sec); line-height: 1.65; }
+.chat-bubble--user { align-self: flex-end; border-radius: 12px 12px 4px 12px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.25); }
+.chat-bubble--ai { align-self: flex-start; border-radius: 12px 12px 12px 4px; background: var(--card); border: 1px solid var(--border); }
+.chat-input { width: 100%; min-height: 50px; padding: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 7px; color: var(--text); font-size: 13px; font-family: var(--sans); line-height: 1.6; resize: none; outline: none; }
+.chat-input:focus { border-color: var(--blue); }
+
+/* ── Choice Cards ── */
+.choice { border-radius: 9px; padding: 16px 20px; margin-bottom: 7px; cursor: pointer; transition: all .2s; border: 1px solid var(--border); background: var(--card); }
+.choice:hover:not(.choice--revealed) { border-color: rgba(59,130,246,0.4); }
+.choice--selected { border-color: var(--blue); background: rgba(59,130,246,0.08); }
+.choice--revealed { cursor: default; }
+.choice--dimmed { opacity: .5; }
+.choice__id { font-family: var(--mono); font-size: 11px; font-weight: 700; margin-bottom: 3px; }
+.choice__title { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.choice__desc { font-size: 13px; color: var(--sec); line-height: 1.5; }
+.choice__impact { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.choice__impact span { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 3px; color: var(--sec); }
+
+/* ── Feedback ── */
+.feedback { border-radius: 9px; padding: 16px 20px; margin-top: 12px; animation: fadeIn .4s ease; }
+.feedback__title { font-family: var(--mono); font-size: 11px; font-weight: 700; margin-bottom: 5px; }
+.feedback__body { font-size: 14px; color: var(--sec); line-height: 1.75; }
+.feedback__ref { margin-top: 8px; padding: 8px 12px; background: rgba(59,130,246,0.06); border-radius: 5px; font-size: 12px; color: var(--sec); line-height: 1.6; border-left: 2px solid var(--blue); }
+
+/* ── Narrative ── */
+.narrative { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; border-left: 3px solid var(--blue); line-height: 1.85; font-size: 15px; }
+.narrative p + p { margin-top: 10px; }
+
+/* ── Home Scenario Card ── */
+.sc-card { display: flex; gap: 18px; align-items: center; padding: 20px 24px; cursor: pointer; transition: all .2s; background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+.sc-card:hover { border-color: rgba(59,130,246,0.35); }
+.sc-card__icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; position: relative; }
+.sc-card__check { position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; }
+.sc-card__meta { display: flex; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; align-items: center; }
+.sc-card__title { font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+.sc-card__company { font-size: 13px; color: var(--sec); }
+
+/* ── Progress bar ── */
+.progress { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress__fill { height: 100%; border-radius: 2px; transition: width .3s ease; }
+
+/* ── Step indicator ── */
+.step-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+
+/* ── Timeline ── */
+.timeline { position: relative; padding-left: 20px; }
+.timeline__line { position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+.timeline__item { position: relative; margin-bottom: 14px; padding-left: 20px; }
+.timeline__dot { position: absolute; left: -17px; top: 4px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--bg); }
+
+/* ── Clue buttons ── */
+.clue-btn { padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--sec); transition: all .15s; }
+.clue-btn--active { background: rgba(59,130,246,0.12); border-color: var(--blue); color: var(--blue); }
+
+/* ── Hint ── */
+.hint-btn { background: rgba(234,179,8,.08); border: 1px solid rgba(234,179,8,.2); border-radius: 5px; padding: 6px 12px; cursor: pointer; font-size: 12px; color: var(--yellow); font-weight: 500; }
+.hint-box { margin-top: 6px; padding: 10px 14px; background: rgba(234,179,8,.06); border: 1px solid rgba(234,179,8,.15); border-radius: 7px; font-size: 13px; color: var(--yellow); line-height: 1.6; }
+
+/* ── Score ── */
+.score-display { font-family: var(--mono); font-size: 42px; font-weight: 700; }
+
+/* ── Share card ── */
+.share-card { background: linear-gradient(135deg, var(--card), rgba(59,130,246,0.08)); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; text-align: center; }
+
+/* ── Focus visible ── */
+.choice:focus-visible, .btn:focus-visible, .clue-btn:focus-visible, .hint-btn:focus-visible, .sc-card:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 8px; }
+
+/* ── Accessibility helpers ── */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .container { padding: 20px 16px 60px; }
+  .narrative { font-size: 14px; padding: 16px 18px; }
+  .sc-card { gap: 12px; padding: 16px; }
+  .sc-card__icon { width: 40px; height: 40px; font-size: 20px; }
+  .sc-card__title { font-size: 14px; }
+  .metric-grid { grid-template-columns: 1fr 1fr; }
+  .metric-card__value { font-size: 16px; }
+  .choice { padding: 14px 16px; }
+  .choice__title { font-size: 13px; }
+  .slack__body { padding-left: 0; margin-top: 8px; }
+  .chat-area { padding: 12px 14px; }
+  .chat-bubble { max-width: 92%; font-size: 12px; }
+  .tradeoff table { font-size: 11px; }
+  .tradeoff th, .tradeoff td { padding: 6px 8px; }
+  .score-display { font-size: 32px; }
+  .btn { padding: 10px 20px; font-size: 13px; }
+  h1 { font-size: 22px !important; }
+  h2 { font-size: 18px !important; }
+}
+
+@media (max-width: 380px) {
+  .metric-grid { grid-template-columns: 1fr; }
+  .choice__impact { flex-direction: column; gap: 4px; }
+}
