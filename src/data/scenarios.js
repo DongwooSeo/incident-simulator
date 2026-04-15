@@ -43,7 +43,19 @@ export const GLOSSARY = {
   "Write-Behind": "Write-Back이라고도 함. 캐시에 먼저 쓰고, 일정 주기로 DB에 비동기 반영하는 패턴. 쓰기 성능 높지만 유실 위험",
   "Consumer Lag": "Kafka에서 프로듀서가 보낸 메시지 대비 컨슈머가 아직 처리하지 못한 메시지의 차이. 랙이 커지면 처리 지연 발생",
   "시크릿 관리": "API 키, DB 비밀번호 등 민감 정보를 코드/저장소에 노출하지 않고 안전하게 관리하는 체계 (Vault, AWS Secrets Manager 등)",
+  "결제": "고객이 상품·서비스 대금을 PG 등을 통해 승인·캡처하는 과정. 멱등성·정산과 직결",
+  "재고 관리": "상품 수량을 추적하고 주문 시 차감하는 도메인. 동시성 제어(원자적 UPDATE 등)가 핵심",
+  "Redis 장애": "Redis OOM, 페일오버, 클러스터 리밸런싱 등으로 캐시·세션 데이터가 유실되거나 서비스가 느려지는 상황",
+  "보안 사고": "시크릿 노출, 무단 접근, 개인정보 유출 등 보안·인시던트 대응이 필요한 사건",
+  "인시던트 대응": "Incident Response. 장애·보안 사고 발생 시 탐지·분석·복구·사후 보고까지의 일련의 절차",
+  "Kafka": "분산 이벤트 스트리밍 플랫폼. 토픽·파티션·컨슈머 그룹으로 메시지를 비동기 전달",
+  "메시지 큐": "비동기 메시지를 전달하는 큐 시스템 (Kafka, RabbitMQ 등). 생산자와 소비자를 느슨하게 결합",
 };
+
+/** 시나리오 태그가 용어집에 있는지 (개발·QA용) */
+export function isGlossaryTagDefined(tag) {
+  return Object.prototype.hasOwnProperty.call(GLOSSARY, tag);
+}
 
 export const SCENARIOS = [
   {

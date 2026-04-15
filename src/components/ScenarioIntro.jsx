@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { GLOSSARY } from '../data/scenarios';
 
+const MISSING_GLOSSARY_HINT =
+  '이 키워드 설명을 아직 용어집에 추가하지 않았습니다. 시뮬레이션 본문과 단서에서 맥락을 확인해 보세요.';
+
 export default function ScenarioIntro({ sc, onStart }) {
   const [expandedTag, setExpandedTag] = useState(null);
 
@@ -41,17 +44,19 @@ export default function ScenarioIntro({ sc, onStart }) {
                 return (
                   <div key={tag}>
                     <button
+                      type="button"
                       className="keyword-btn"
                       aria-expanded={isOpen}
+                      aria-label={def ? `${tag}, 용어 설명 펼치기` : `${tag}, 설명 없음`}
                       onClick={() => setExpandedTag(isOpen ? null : tag)}
                       style={{ width: '100%', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: isOpen ? 'rgba(234,179,8,0.08)' : 'var(--bg)', border: `1px solid ${isOpen ? 'rgba(234,179,8,0.3)' : 'var(--border)'}`, borderRadius: 6, cursor: 'pointer', color: 'var(--text)', fontWeight: 600, fontSize: 13, fontFamily: 'var(--sans)', transition: 'all .15s' }}
                     >
                       <span>{tag}</span>
                       <span style={{ color: 'var(--muted)', fontSize: 11, fontFamily: 'var(--mono)', flexShrink: 0 }}>{isOpen ? '▾' : '▸'}</span>
                     </button>
-                    {isOpen && def && (
+                    {isOpen && (
                       <div style={{ padding: '8px 12px', fontSize: 13, color: 'var(--sec)', lineHeight: 1.7, background: 'rgba(234,179,8,0.04)', borderRadius: '0 0 6px 6px', borderTop: 'none', animation: 'fadeIn .2s ease' }}>
-                        {def}
+                        {def ?? <span style={{ fontStyle: 'italic', color: 'var(--muted)' }}>{MISSING_GLOSSARY_HINT}</span>}
                       </div>
                     )}
                   </div>

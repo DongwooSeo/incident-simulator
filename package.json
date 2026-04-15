@@ -8,6 +8,7 @@
     "dev:ui": "vite",
     "dev:api": "node --env-file=.env server/index.js",
     "build": "vite build",
+    "qa": "node scripts/qa-validate.mjs",
     "start": "NODE_ENV=production node --env-file=.env server/index.js",
     "preview": "vite preview"
   },
